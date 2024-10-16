@@ -1,14 +1,9 @@
-# app/models.py
-
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 # Crear un administrador de usuarios personalizado
 class UsuarioManager(BaseUserManager):
     def create_user(self, run, nombre, apellido, password=None, **extra_fields):
-        """
-        Crear y guardar un usuario con el RUT y la contraseña especificados.
-        """
         if not run:
             raise ValueError("El RUT es obligatorio")
         user = self.model(run=run, nombre=nombre, apellido=apellido, **extra_fields)
@@ -17,20 +12,11 @@ class UsuarioManager(BaseUserManager):
         return user
 
     def create_superuser(self, run, nombre, apellido, password=None, **extra_fields):
-        """
-        Crear y guardar un superusuario con el RUT, nombre, apellido y contraseña.
-        """
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError("El superusuario debe tener is_staff=True.")
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError("El superusuario debe tener is_superuser=True.")
-
         return self.create_user(run, nombre, apellido, password, **extra_fields)
 
-# Definir el modelo de Usuarios
 class Usuarios(AbstractBaseUser, PermissionsMixin):
     id_usuario = models.AutoField(primary_key=True)
     run = models.CharField(max_length=9, unique=True)  # RUT único
@@ -40,8 +26,8 @@ class Usuarios(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
+    persona = models.OneToOneField('Persona', on_delete=models.SET_NULL, null=True, blank=True)  # Relación con Persona
 
-    # Definir el campo que se usará como nombre de usuario para el login
     USERNAME_FIELD = 'run'
     REQUIRED_FIELDS = ['nombre', 'apellido']
 
@@ -49,3 +35,31 @@ class Usuarios(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.nombre} {self.apellido} ({self.run})"
+
+class Persona(models.Model):
+    nombre = models.CharField(max_length=100)
+    apellido = models.CharField(max_length=100)
+    email = models.EmailField(null=True, blank=True)  # Permitir nulo y valores en blanco
+    rol = models.CharField(max_length=50)  # Puede ser 'Profesor', 'Asistente', etc.
+    foto = models.ImageField(upload_to='fotos_perfil/', blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.nombre} {self.apellido}"
+    
+class Horario(models.Model):
+    DIAS_SEMANA = [
+        ('LUNES', 'Lunes'),
+        ('MARTES', 'Martes'),
+        ('MIERCOLES', 'Miércoles'),
+        ('JUEVES', 'Jueves'),
+        ('VIERNES', 'Viernes'),
+    ]
+    
+    persona = models.ForeignKey(Persona, on_delete=models.CASCADE)
+    dia_semana = models.CharField(max_length=10, choices=DIAS_SEMANA)
+    bloque = models.CharField(max_length=50, default="08:30 - 10:00")  # Ejemplo: "08:30 - 10:00"
+    asignatura = models.CharField(max_length=100, blank=True, null=True)
+    clase = models.CharField(max_length=100, blank=True, null=True)  # Ejemplo: "4to Básico A"
+
+    def __str__(self):
+        return f"{self.asignatura} ({self.clase}) - {self.dia_semana} - {self.bloque}"

@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Intranet Liceo San Pedro{% endblock %}</title>
+    
+    <!-- Incluir el CSS generado por Tailwind -->
+    <link href="{% static 'app/css/output.css' %}" rel="stylesheet">
+    
+    <!-- Cualquier otro CSS o metadatos adicionales -->
+    {% block extra_head %}
+    {% endblock %}
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+    <!-- Barra de navegación superior -->
+    <nav class="bg-gradient-to-r from-cyan-400 to-blue-600 shadow-md p-4 text-white">
+        <div class="container mx-auto flex justify-between">
+            <a href="{% url 'home' %}" class="text-xl font-bold">Liceo San Pedro</a>
+            <ul class="flex space-x-6">
+                <li><a href="#" class="hover:underline">Calendario</a></li>
+                <li><a href="#" class="hover:underline">Horario</a></li>
+                <li><a href="#" class="hover:underline">Anuncios</a></li>
+                <li><a href="#" class="hover:underline">Archivos</a></li>
+                <li><a href="#" class="hover:underline">Compartidos</a></li>
+                <li><a href="#" class="hover:underline">LSPcam</a></li>
+                <li><a href="#" class="hover:underline">Cerrar Sesión</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="flex-grow container mx-auto py-8">
+        {% block content %}
+        <!-- Aquí irá el contenido específico de cada página -->
+        {% endblock %}
+    </main>
+
+    <!-- Pie de página -->
+    <footer class="bg-gradient-to-r from-cyan-400 to-blue-600 text-white text-center py-4">
+        <p>&copy; 2024 Liceo San Pedro - Todos los derechos reservados</p>
+    </footer>
+
+    <!-- Incluir cualquier archivo JS adicional -->
+    {% block extra_js %}
+    {% endblock %}
+</body>
+</html>
