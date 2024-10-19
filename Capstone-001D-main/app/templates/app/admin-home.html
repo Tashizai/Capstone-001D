@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Panel de Administrador{% endblock %}
+
+{% block content %}
+<!-- Contenedor del saludo y perfil -->
+<div class="flex items-center justify-start space-x-6 px-16 mb-10">
+    <img src="{% static 'app/img/admin.jpg' %}" alt="Admin" class="w-24 h-24 rounded-full shadow-lg">
+    <h1 class="text-5xl font-light text-white">Bienvenido "{{ user.nombre }}" @admin</h1>
+</div>
+
+<!-- Cuadro Principal -->
+<div class="container mx-auto flex justify-center items-start mt-12">
+    <div class="bg-white bg-opacity-70 shadow-2xl rounded-lg p-12 w-full max-w-7xl grid grid-cols-1 md:grid-cols-3 gap-10">
+
+        <!-- Botones de Funciones -->
+        <div class="col-span-2 space-y-6">
+            <button id="abrir-modal" class="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold py-4 rounded-lg transition-transform transform hover:scale-105">
+                + Añadir Usuario
+            </button>
+            <button class="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold py-4 rounded-lg transition-transform transform hover:scale-105">
+                <a href="{% url 'ver_horario' usuario_id=request.user.id_usuario %}">
+                    Horario
+                </a>
+            </button>
+            <button class="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold py-4 rounded-lg transition-transform transform hover:scale-105">
+                Añadir Anuncio
+            </button>
+            <button class="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold py-4 rounded-lg transition-transform transform hover:scale-105">
+                Subir Archivos
+            </button>
+            <button class="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold py-4 rounded-lg transition-transform transform hover:scale-105">
+                <a href="{% url 'calendario_admin' %}">
+                    Añadir Evento en Calendario
+                </a>
+            </button>
+            <button class="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold py-4 rounded-lg transition-transform transform hover:scale-105">
+                Crear Sala de Videollamada
+            </button>
+        </div>
+        <!-- Lista de Usuarios con Scroll y Búsqueda -->
+        <div class="space-y-4">
+            <h2 class="text-xl font-semibold">Lista de Usuarios</h2>
+            <input type="text" id="buscar-usuario" placeholder="Buscar Usuario" class="w-full p-3 rounded-lg border focus:outline-none">
+            <div id="lista-usuarios" class="overflow-y-auto h-72 space-y-3">
+                {% for usuario in usuarios %}
+                    <a href="{% url 'ver_horario' usuario.id_usuario %}" 
+                       class="block bg-white shadow-md p-3 rounded-lg hover:bg-gray-100 transition">
+                        {{ usuario.nombre }} {{ usuario.apellido }} - {{ usuario.rol }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Overlay -->
+<div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-30 hidden flex items-center justify-center z-50 transition-opacity duration-300">
+    <div class="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full transform transition-all duration-500 scale-90 opacity-0" id="modal-content">
+        <h2 class="text-3xl font-semibold text-center mb-6 text-gray-800">Añadir Usuario</h2>
+
+        <form id="form-crear-usuario">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <input type="text" name="run" placeholder="RUT (sin puntos ni guion)" required 
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+        
+                <input type="text" name="nombre" placeholder="Nombre" required 
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+        
+                <input type="text" name="apellido" placeholder="Apellido" required 
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+        
+                <input type="email" name="email" placeholder="Correo Electrónico" required 
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+        
+                <select name="rol" id="rol" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    <option value="" disabled selected>Seleccionar Rol</option>
+                    <option value="profesor">Profesor</option>
+                    <option value="directivo">Directivo</option>
+                    <option value="asistente">Asistente</option>
+                </select>
+        
+                <input type="password" name="password" placeholder="Contraseña" required 
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+            </div>
+        
+            <div class="flex justify-end space-x-4 mt-6">
+                <button type="button" id="cerrar-modal" 
+                        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                    Cancelar
+                </button>
+                <button type="submit" 
+                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                    Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    const abrirModal = document.getElementById('abrir-modal');
+    const cerrarModal = document.getElementById('cerrar-modal');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalContent = document.getElementById('modal-content');
+
+    abrirModal.addEventListener('click', () => {
+        modalOverlay.classList.remove('hidden');
+        setTimeout(() => {
+            modalContent.classList.remove('opacity-0', 'scale-90');
+        }, 10); // Delay para aplicar la animación
+    });
+
+    cerrarModal.addEventListener('click', () => {
+        modalContent.classList.add('opacity-0', 'scale-90');
+        setTimeout(() => {
+            modalOverlay.classList.add('hidden');
+        }, 300); // Esperar a que termine la animación
+    });
+
+    document.getElementById('form-crear-usuario').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    fetch('/crear-usuario/', {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            mostrarMensaje('Usuario creado exitosamente.', 'bg-green-500');
+            this.reset();  // Reiniciar el formulario
+        } else {
+            mostrarMensaje(`Error: ${data.message}`, 'bg-red-500');
+        }
+    })
+    .catch(error => {
+        mostrarMensaje(`Error: ${error}`, 'bg-red-500');
+    });
+});
+
+function mostrarMensaje(mensaje, claseColor) {
+    const mensajeDiv = document.createElement('div');
+    mensajeDiv.className = `fixed top-5 right-5 p-4 rounded-lg text-white shadow-lg transition-opacity duration-500 ${claseColor}`;
+    mensajeDiv.textContent = mensaje;
+
+    document.body.appendChild(mensajeDiv);
+
+    setTimeout(() => {
+        mensajeDiv.classList.add('opacity-0');
+        setTimeout(() => mensajeDiv.remove(), 500);
+    }, 3000);
+}
+</script>
+
+<script>
+    const searchInput = document.getElementById('search-input');
+    const userList = document.getElementById('user-list');
+
+    searchInput.addEventListener('input', function () {
+        const filter = searchInput.value.toLowerCase();
+        const users = userList.getElementsByClassName('rounded-lg');
+
+        for (let i = 0; i < users.length; i++) {
+            const userText = users[i].textContent || users[i].innerText;
+            if (userText.toLowerCase().indexOf(filter) > -1) {
+                users[i].style.display = '';
+            } else {
+                users[i].style.display = 'none';
+            }
+        }
+    });
+</script>
+
+{% endblock %}

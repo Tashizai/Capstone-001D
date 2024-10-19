@@ -1,0 +1,89 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Intranet LSP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        @keyframes gradientBackground {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .animated-gradient {
+            background: linear-gradient(135deg, #4e54c8, #8f94fb, #4e54c8);
+            background-size: 400% 400%;
+            animation: gradientBackground 15s ease infinite;
+        }
+
+        .shadow-lg-custom {
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .gradient-dark {
+            background: linear-gradient(135deg, #3b49a3, #5a5fca);
+        }
+    </style>
+</head>
+
+<body class="animated-gradient min-h-screen flex items-center justify-center">
+
+    <!-- Contenedor del Login -->
+    <div class="bg-white w-full max-w-4xl shadow-lg-custom rounded-xl overflow-hidden flex flex-col md:flex-row">
+        <!-- Sección Izquierda (Formulario) -->
+        <div class="w-full md:w-1/2 p-10">
+            <h2 class="text-3xl font-light text-gray-800 mb-6">Iniciar Sesión</h2>
+            <form method="POST" action="{% url 'login' %}" class="space-y-6">
+                {% csrf_token %}
+                <!-- Campo RUN -->
+                <div>
+                    <label for="run" class="block text-sm font-medium text-gray-800">RUT</label>
+                    <input type="text" name="run" id="run" placeholder="Ingresa tu RUT"
+                        class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <!-- Campo Contraseña -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-800">Contraseña</label>
+                    <input type="password" name="password" id="password" placeholder="Ingresa tu contraseña"
+                        class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+
+                <!-- Botón Iniciar Sesión -->
+                <button type="submit"
+                    class="w-full bg-indigo-600 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-300 ease-in-out">
+                    Iniciar Sesión
+                </button>
+            </form>
+        </div>
+
+        <!-- Sección Derecha (Logo e Información) -->
+        <div class="w-full md:w-1/2 gradient-dark text-white flex flex-col items-center justify-center p-10">
+            <img src="{% static 'app/img/logo.png' %}" alt="Logo Liceo" class="w-24 h-24 mb-4">
+            <h2 class="text-2xl font-light">Bienvenido al Liceo Municipal</h2>
+            <p class="mt-2 text-sm text-white">Accede con tus credenciales para continuar</p>
+        </div>
+    </div>
+
+</body>
+
+</html>
