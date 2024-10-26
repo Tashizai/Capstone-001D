@@ -14,6 +14,7 @@ urlpatterns = [
     path('agregar-horario/', views.agregar_horario, name='agregar_horario'),
     path('editar-horario/', views.editar_horario, name='editar_horario'),
     path('calendario/', views.calendario, name='calendario'),
+    path('calendario_admin/', views.calendario, name='calendario_admin'),
     path('agregar-evento/', views.agregar_evento, name='agregar_evento'),
     path('eliminar-evento/<int:evento_id>/', views.eliminar_evento, name='eliminar_evento'),
     path('editar-evento/<int:evento_id>/', views.editar_evento, name='editar_evento'),
@@ -21,5 +22,8 @@ urlpatterns = [
     path('agregar-evento-admin/', views.agregar_evento_admin, name='agregar_evento'),
     path('eliminar-evento-admin/<int:evento_id>/', views.eliminar_evento_admin, name='eliminar_evento'),
     path('editar-evento-admin/<int:evento_id>/', views.editar_evento_admin, name='editar_evento'),
+    path('anuncios/', views.lista_anuncios, name='lista_anuncios'),
+    path('anuncios/crear/', views.crear_anuncio, name='crear_anuncio'),
+    path('anuncios/eliminar/<int:anuncio_id>/', views.eliminar_anuncio, name='eliminar_anuncio'),
 
 ]

@@ -11,6 +11,9 @@ import json
 from django.utils.timezone import now
 import calendar
 from datetime import date
+from .models import Anuncio
+from .forms import AnuncioForm
+
 
 
 def login_view(request):
@@ -495,3 +498,36 @@ def editar_evento_admin(request, evento_id):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
+
+
+def lista_anuncios(request):
+    anuncios = Anuncio.objects.all().order_by('-fecha_creacion')
+    ultimo_anuncio = anuncios.first()  # Obtener el último anuncio creado si existe
+    anuncios_json = json.dumps(list(anuncios.values('id', 'titulo', 'descripcion', 'autor__nombre', 'grupo_destinatario')))
+    return render(request, 'app/anuncios.html', {
+        'anuncios': anuncios,
+        'anuncios_json': anuncios_json,
+        'ultimo_anuncio': ultimo_anuncio
+    })
+
+
+@csrf_exempt
+def crear_anuncio(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        titulo = data.get('titulo')
+        descripcion = data.get('descripcion')
+        grupo_destinatario = data.get('grupo')
+        
+        # Crear el anuncio
+        anuncio = Anuncio.objects.create(
+            titulo=titulo,
+            descripcion=descripcion,
+            grupo_destinatario=grupo_destinatario,
+            autor=request.user
+        )
+        return JsonResponse({'message': 'Anuncio creado correctamente'}, status=201)
+
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+

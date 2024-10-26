@@ -93,3 +93,22 @@ class Evento(models.Model):
 
     def __str__(self):
         return f"{self.titulo} - {self.fecha}"
+    
+class Anuncio(models.Model):
+    GRUPO_CHOICES = [
+        ('Todos', 'Todos'),
+        ('Directivos', 'Directivos'),
+        ('Profesores', 'Profesores'),
+        ('Asistentes', 'Asistentes'),
+    ]
+    
+    titulo = models.CharField(max_length=255)
+    descripcion = models.TextField()
+    autor = models.ForeignKey(Usuarios, on_delete=models.CASCADE)
+    grupo_destinatario = models.CharField(max_length=20, choices=GRUPO_CHOICES)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.titulo
+    
+    
