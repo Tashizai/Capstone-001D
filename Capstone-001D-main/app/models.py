@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils.timezone import now
 from datetime import time
+from django.conf import settings
+from django.contrib.auth import get_user_model
 
 class UsuarioManager(BaseUserManager):
     def create_user(self, run, nombre, apellido, password=None, **extra_fields):
@@ -111,4 +113,22 @@ class Anuncio(models.Model):
     def __str__(self):
         return self.titulo
     
-    
+User = get_user_model()
+
+class Carpeta(models.Model):
+    nombre = models.CharField(max_length=255)
+    creador = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.nombre
+
+class Archivo(models.Model):
+    nombre = models.CharField(max_length=255)
+    archivo = models.FileField(upload_to='archivos/')
+    tamano = models.PositiveIntegerField()  # Campo para almacenar el tamaño del archivo
+    fecha_subida = models.DateTimeField(auto_now_add=True)
+    creador = models.ForeignKey(User, on_delete=models.CASCADE)
+    carpeta = models.ForeignKey(Carpeta, on_delete=models.CASCADE, null=True, blank=True)
+
+    def __str__(self):
+        return self.nombre

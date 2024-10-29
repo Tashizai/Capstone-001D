@@ -25,7 +25,7 @@
             <li class="md:mr-4"><a href="{% url 'calendario' %}" class="hover:text-gray-300 transition block py-2 md:py-0">Calendario</a></li>
             <li class="md:mr-4"><a href="{% url 'ver_horario' usuario_id=request.user.id_usuario %}" class="hover:text-gray-300 transition block py-2 md:py-0">Horario</a></li>
             <li class="md:mr-4"><a href="{% url 'lista_anuncios' %}" class="hover:text-gray-300 transition block py-2 md:py-0">Anuncios</a></li>
-            <li class="md:mr-4"><a href="#" class="hover:text-gray-300 transition block py-2 md:py-0">Archivos</a></li>
+            <li class="md:mr-4"><a href="{% url 'vista_archivos' %}" class="hover:text-gray-300 transition block py-2 md:py-0">Archivos</a></li>
             {% if user.is_staff %}
             <li class="relative group md:mr-4">
                 <a href="#" class="hover:text-gray-300 transition block py-2 md:py-0">Funciones</a>
@@ -54,7 +54,7 @@
             <li><a href="{% url 'calendario' %}" class="hover:text-gray-300 transition block py-2">Calendario</a></li>
             <li><a href="{% url 'ver_horario' usuario_id=request.user.id_usuario %}" class="hover:text-gray-300 transition block py-2">Horario</a></li>
             <li><a href="{% url 'lista_anuncios' %}" class="hover:text-gray-300 transition block py-2">Anuncios</a></li>
-            <li><a href="#" class="hover:text-gray-300 transition block py-2">Archivos</a></li>
+            <li class="md:mr-4"><a href="{% url 'vista_archivos' %}" class="hover:text-gray-300 transition block py-2 md:py-0">Archivos</a></li>
             {% if user.is_staff %}
             <li class="relative">
                 <button id="funciones-toggle" class="hover:text-gray-300 transition block py-2 w-full text-left focus:outline-none">Funciones</button>

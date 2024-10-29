@@ -1,0 +1,432 @@
+<!-- templates/app/home.html -->
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Inscripción</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+    <!-- Barra superior -->
+    <header class="bg-purple-600 text-white shadow-md">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Liceo Municipal</h1>
+            <nav class="space-x-4">
+                <a href="/home/" class="hover:text-gray-300">Inicio</a>
+                <a href="/estudiante/nuevo/" class="hover:text-gray-300">Nuevo Estudiante</a>
+                <a href="#" class="hover:text-gray-300">Subir Documentos</a>
+                <a href="#" class="hover:text-gray-300">Imprimir PDF</a>
+                <a href="/logout/" class="bg-red-500 px-4 py-2 rounded hover:bg-red-700">Cerrar Sesión</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Contenido principal con fondo -->
+    <main class="container mx-auto px-6 py-8">
+        <div class="bg-white shadow-lg rounded-lg p-8">
+            
+    <h1 class="text-3xl font-bold mb-6 text-center">Formulario de Inscripción de Matrícula</h1>
+
+    <!-- Búsqueda por RUT -->
+    <div class="mb-8 flex justify-center items-center">
+        <input type="text" id="rut" class="border border-purple-300 bg-transparent text-gray-800 placeholder-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Ingrese RUT del estudiante">
+        <button type="button" class="ml-4 bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700" onclick="searchStudent()">Buscar</button>
+    </div>
+
+    <!-- Formulario del Estudiante -->
+    <form id="studentForm" method="POST" action="/guardar-estudiante/" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <input type="hidden" name="csrfmiddlewaretoken" value="ZbqZV1fyKA57TfKd5aDhQLDgH3VPW0piIj4ZZOI19uFqmnCdx6W3wLHAVffznQdV">
+
+        <!-- Información del Estudiante -->
+        <div>
+            <label for="studentRut" class="block font-semibold mb-1">RUT</label>
+            <input type="text" id="studentRut" name="rut" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500" readonly>
+        </div>
+
+        <div>
+            <label for="studentName" class="block font-semibold mb-1">Nombre Completo</label>
+            <input type="text" id="studentName" name="nombre_completo" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+
+        <div>
+            <label for="curso" class="block font-semibold mb-1">Curso</label>
+            <input type="text" id="curso" name="curso" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+
+        <div>
+            <label for="birthdate" class="block font-semibold mb-1">Fecha de Nacimiento</label>
+            <input type="date" id="birthdate" name="fecha_nacimiento" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+
+        <div>
+            <label for="gender" class="block font-semibold mb-1">Sexo</label>
+            <select id="gender" name="sexo" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <option value="">Seleccionar</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Femenino">Femenino</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="nationality" class="block font-semibold mb-1">Nacionalidad</label>
+            <input type="text" id="nationality" name="nacionalidad" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+
+        <div>
+            <label for="domicilio" class="block font-semibold mb-1">Domicilio</label>
+            <input type="text" id="domicilio" name="domicilio" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+
+        <div>
+            <label for="comuna" class="block font-semibold mb-1">Comuna</label>
+            <input type="text" id="comuna" name="comuna" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+
+        <!-- Información de los Padres y Apoderados -->
+        <div class="col-span-2">
+            <h2 class="text-xl font-bold my-4">Información de los Padres</h2>
+        </div>
+
+        <div>
+            <label for="nombre_madre" class="block font-semibold mb-1">Nombre de la Madre</label>
+            <input type="text" id="nombre_madre" name="nombre_madre" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="rut_madre" class="block font-semibold mb-1">RUT de la Madre</label>
+            <input type="text" id="rut_madre" name="rut_madre" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="numero_telefono" class="block font-semibold mb-1">Numero de telefono</label>
+            <input type="text" id="numero_telefono" name="numero_telefono" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="nivel_educacional" class="block font-semibold mb-1">Nivel educacional</label>
+            <input type="text" id="nivel_educacional" name="nivel_educacional" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="Actividad_realiza" class="block font-semibold mb-1">Actividad que realiza</label>
+            <input type="text" id="Actividad_realiza" name="Actividad_realiza" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="correo_electronico" class="block font-semibold mb-1">Correo electronico</label>
+            <input type="text" id="correo_electronico" name="correo_electronico" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="nombre_padre" class="block font-semibold mb-1">Nombre del padre</label>
+            <input type="text" id="nombre_padre" name="nombre_padre" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="rut_padre" class="block font-semibold mb-1">RUT del padre</label>
+            <input type="text" id="rut_padre" name="rut_padre" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="numero_telefono_padre" class="block font-semibold mb-1">Numero de telefono</label>
+            <input type="text" id="numero_telefono_padre" name="numero_telefono_padre" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="nivel_educacional_padre" class="block font-semibold mb-1">Nivel educacional</label>
+            <input type="text" id="nivel_educacional_padre" name="nivel_educacional_padre" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="Actividad_realiza_padre" class="block font-semibold mb-1">Actividad que realiza</label>
+            <input type="text" id="Actividad_realiza_padre" name="Actividad_realiza_padre" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="correo_electronico_padre" class="block font-semibold mb-1">Correo electronico</label>
+            <input type="text" id="correo_electronico_padre" name="correo_electronico_padre" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <!-- Información de los Padres y Apoderados -->
+        <div class="col-span-2">
+            <h2 class="text-xl font-bold my-4">Información del apoderado</h2>
+        </div>
+
+        <div>
+            <label for="nombre_apoderado" class="block font-semibold mb-1">Nombre del apoderado</label>
+            <input type="text" id="nombre_apoderado" name="nombre_apoderado" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="rut_apoderado" class="block font-semibold mb-1">RUT del apoderado</label>
+            <input type="text" id="rut_apoderado" name="rut_apoderado" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="numero_telefono_apoderado" class="block font-semibold mb-1">Numero de telefono</label>
+            <input type="text" id="numero_telefono_apoderado" name="numero_telefono_apoderado" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="nivel_educacional_apoderado" class="block font-semibold mb-1">Nivel educacional</label>
+            <input type="text" id="nivel_educacional_apoderado" name="nivel_educacional_apoderado" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="Actividad_realiza_apoderado" class="block font-semibold mb-1">Actividad que realiza</label>
+            <input type="text" id="Actividad_realiza_apoderado" name="Actividad_realiza_apoderado" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="correo_electronico_apoderado" class="block font-semibold mb-1">Correo electronico</label>
+            <input type="text" id="correo_electronico_apoderado" name="correo_electronico_apoderado" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div class="col-span-2">
+            <h2 class="text-xl font-bold my-4">Información del apoderado suplente</h2>
+        </div>
+
+        <div>
+            <label for="nombre_apoderado_suplente" class="block font-semibold mb-1">Nombre del apoderado suplente</label>
+            <input type="text" id="nombre_apoderado_suplente" name="nombre_apoderado_suplente" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="rut_apoderado_suplente" class="block font-semibold mb-1">RUT del apoderado suplente</label>
+            <input type="text" id="rut_apoderado_suplente" name="rut_apoderado_suplente" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="numero_telefono_apoderado_suplente" class="block font-semibold mb-1">Numero de telefono</label>
+            <input type="text" id="numero_telefono_apoderado_suplente" name="numero_telefono_apoderado_suplente" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="nivel_educacional_apoderado_suplente" class="block font-semibold mb-1">Nivel educacional</label>
+            <input type="text" id="nivel_educacional_apoderado_suplente" name="nivel_educacional_apoderado_suplente" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="Actividad_realiza_apoderado_suplente" class="block font-semibold mb-1">Actividad que realiza</label>
+            <input type="text" id="Actividad_realiza_apoderado_suplente" name="Actividad_realiza_apoderado_suplente" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="correo_electronico_apoderado_suplente" class="block font-semibold mb-1">Correo electronico</label>
+            <input type="text" id="correo_electronico_apoderado_suplente" name="correo_electronico_apoderado_suplente" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+
+        <!-- Información Social y de Salud -->
+        <div class="col-span-2">
+            <h2 class="text-xl font-bold my-4">Información Social</h2>
+        </div>
+
+        <div>
+            <label for="vive_con" class="block font-semibold mb-1">Vive con</label>
+            <select id="vive_con" name="vive_con" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+                <option value="Ambos Padres">Ambos Padres</option>
+                <option value="Padre">Padre</option>
+                <option value="Madre">Madre</option>
+                <option value="Otros">Otros</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="resolucion_judicial" class="block font-semibold mb-1">Resolución Judicial</label>
+            <select id="resolucion_judicial" name="resolucion_judicial" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+                <option value="No">No</option>
+                <option value="Sí">Sí</option>
+            </select>
+        </div>
+
+        <div class="col-span-2">
+            <h2 class="text-xl font-bold my-4">Información de salud</h2>
+        </div>
+
+        <div>
+            <label for="problema_salud" class="block font-semibold mb-1">¿Problemas de salud o alergia que el liceo deba conocer?</label>
+            <select id="problema_salud" name="problema_salud" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+                <option value="No">No</option>
+                <option value="Sí">Sí</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="enfermedad_especificar" class="block font-semibold mb-1">¿Cual? Especificar</label>
+            <input type="text" id="enfermedad_especificar" name="enfermedad_especificar" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="educacion_fisica" class="block font-semibold mb-1">Impidimiento para realizar educacion fisica con normalidad</label>
+            <select id="educacion_fisica" name="educacion_fisica" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+                <option value="No">No</option>
+                <option value="Sí">Sí</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="presenta_certificado" class="block font-semibold mb-1">Presenta certificado</label>
+            <select id="presenta_certificado" name="presenta_certificado" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+                <option value="No">No</option>
+                <option value="Sí">Sí</option>
+            </select>
+        </div>
+
+        <div class="col-span-2">
+            <h2 class="text-xl font-bold my-4">Transporte y otros aspectos</h2>
+        </div>
+
+        <div>
+            <label for="tipo_transporte" class="block font-semibold mb-1">Tipo de transporte que usara durante el año 2025</label>
+            <input type="text" id="tipo_transporte" name="tipo_transporte" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+        </div>
+
+        <div>
+            <label for="religion" class="block font-semibold mb-1">Opto por clases de religion catolica</label>
+            <select id="religion" name="religion" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+                <option value="No">No</option>
+                <option value="Sí">Sí</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="fotos_videos" class="block font-semibold mb-1">Acepto que mi hijo sea fotografiado y/o participe en videos con fines educativos</label>
+            <select id="fotos_videos" name="fotos_videos" class="border bg-transparent border-purple-300 rounded-lg w-full px-4 py-2">
+                <option value="No">No</option>
+                <option value="Sí">Sí</option>
+            </select>
+        </div>
+
+        <button type="submit" class="col-span-2 bg-green-500 text-white py-2 rounded-lg hover:bg-green-700">
+            Guardar Cambios
+        </button>
+    </form>
+
+    <script>
+        // Función para buscar al estudiante por RUT
+        function searchStudent() {
+            const rut = document.getElementById('rut').value;
+    
+            if (rut) {
+                fetch(`/buscar-estudiante/?rut=${rut}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            const studentData = data.data;
+    
+                            // Rellenar los campos del formulario
+                            setValue('studentRut', studentData.rut);
+                            setValue('studentName', studentData.nombre_completo);
+                            setValue('curso', studentData.curso);
+                            setValue('birthdate', studentData.fecha_nacimiento);
+                            setValue('gender', studentData.sexo);
+                            setValue('nationality', studentData.nacionalidad);
+                            setValue('domicilio', studentData.domicilio);
+                            setValue('comuna', studentData.comuna);
+                            setValue('ascendencia_indigena', studentData.ascendencia_indigena ? "Sí" : "No");
+                            setValue('etnia', studentData.etnia);
+                            setValue('nombre_madre', studentData.nombre_madre);
+                            setValue('rut_madre', studentData.rut_madre);
+                            setValue('numero_telefono', studentData.telefono_madre);
+                            setValue('nivel_educacional', studentData.nivel_educacional_madre);
+                            setValue('Actividad_realiza', studentData.ocupacion_madre);
+                            setValue('correo_electronico', studentData.email_madre);
+                            setValue('nombre_padre', studentData.nombre_padre);
+                            setValue('rut_padre', studentData.rut_padre);
+                            setValue('numero_telefono_padre', studentData.telefono_padre);
+                            setValue('nivel_educacional_padre', studentData.nivel_educacional_padre);
+                            setValue('Actividad_realiza_padre', studentData.ocupacion_padre);
+                            setValue('correo_electronico_padre', studentData.email_padre);
+                            setValue('nombre_apoderado', studentData.nombre_apoderado);
+                            setValue('rut_apoderado', studentData.rut_apoderado);
+                            setValue('numero_telefono_apoderado', studentData.telefono_apoderado);
+                            setValue('nivel_educacional_apoderado', studentData.nivel_educacional_apoderado);
+                            setValue('Actividad_realiza_apoderado', studentData.ocupacion_apoderado);
+                            setValue('correo_electronico_apoderado', studentData.email_apoderado);
+                            showMessage("Estudiante encontrado correctamente", "success");
+                        } else {
+                            showMessage("Estudiante no encontrado", "error");
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al buscar estudiante:', error);
+                        showMessage("Ocurrió un error al buscar el estudiante.", "error");
+                    });
+            } else {
+                showMessage("Por favor ingrese un RUT válido.", "error");
+            }
+        }
+    
+        // Función para asignar valor a un campo si existe
+        function setValue(elementId, value) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.value = value || ''; // Asigna el valor o deja en blanco si es null/undefined
+            }
+        }
+    
+        // Función para mostrar mensajes bonitos con animación
+        function showMessage(message, type) {
+            const alertBox = document.createElement('div');
+            alertBox.className = `fixed top-5 right-5 p-4 rounded-lg shadow-lg text-white ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+            alertBox.textContent = message;
+    
+            document.body.appendChild(alertBox);
+    
+            setTimeout(() => {
+                alertBox.classList.add('fade-out'); // Animación para desvanecerse
+                setTimeout(() => alertBox.remove(), 1000); // Eliminar después de 1 segundo
+            }, 3000); // Mostrar durante 3 segundos
+        }
+    
+        // Manejar el envío del formulario para guardar cambios y generar el PDF
+        document.getElementById('studentForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevenir recarga de la página
+    
+            const formData = new FormData(this);
+    
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    showMessage("Los cambios se guardaron correctamente. El PDF se descargará.", "success");
+                    return response.blob(); // Obtener el PDF como Blob
+                } else {
+                    throw new Error("Error al guardar los cambios.");
+                }
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'estudiante.pdf';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            })
+            .catch(error => {
+                console.error('Error al guardar los cambios:', error);
+                showMessage("Hubo un error al guardar los cambios.", "error");
+            });
+        });
+    </script>
+    
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-4">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 Liceo Municipal San Pedro. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
