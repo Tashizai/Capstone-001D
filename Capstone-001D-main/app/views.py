@@ -452,8 +452,8 @@ def eliminar_anuncio(request, anuncio_id):
 
 @login_required
 def archivos_view(request):
-    carpetas = Carpeta.objects.filter(creador=request.user)
-    archivos = Archivo.objects.filter(creador=request.user)
+    carpetas = Carpeta.objects.filter(usuario=request.user)
+    archivos = Archivo.objects.filter(usuario=request.user, carpeta__isnull=True)  # Archivos sin carpeta
 
     context = {
         'carpetas': carpetas,
@@ -462,80 +462,73 @@ def archivos_view(request):
     return render(request, 'app/archivos.html', context)
 
 @csrf_exempt
+@login_required
 def crear_carpeta(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
             nombre = data.get('nombre')
+
             if not nombre:
-                return JsonResponse({'status': 'error', 'message': 'El nombre de la carpeta es obligatorio.'}, status=400)
-            
-            # Crear la carpeta
-            Carpeta.objects.create(nombre=nombre)
+                return JsonResponse({'status': 'error', 'message': 'Debe proporcionar un nombre para la carpeta.'}, status=400)
+
+            # Crear la carpeta y asignar el usuario autenticado
+            nueva_carpeta = Carpeta.objects.create(
+                nombre=nombre,
+                usuario=request.user  # Establecer el usuario autenticado como creador
+            )
 
             return JsonResponse({'status': 'success', 'message': 'Carpeta creada correctamente.'})
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
 
-
 @login_required
-def subir_archivo(request):
-    if request.method == 'POST':
-        archivo = request.FILES.get('archivo')
-        carpeta_id = request.POST.get('carpeta_id')
-
-        if archivo:
-            try:
-                carpeta = Carpeta.objects.get(id=carpeta_id) if carpeta_id else None
-                nuevo_archivo = Archivo.objects.create(
-                    nombre=archivo.name,
-                    archivo=archivo,
-                    tamano=archivo.size,  # Asegúrate de que este campo sea incluido correctamente
-                    creador=request.user,
-                    carpeta=carpeta
-                )
-                return JsonResponse({'status': 'success', 'message': 'Archivo subido exitosamente.'})
-            except Carpeta.DoesNotExist:
-                return JsonResponse({'status': 'error', 'message': 'Carpeta no encontrada.'}, status=400)
-            except Exception as e:
-                return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
-
-        return JsonResponse({'status': 'error', 'message': 'No se proporcionó ningún archivo.'}, status=400)
-
-    carpetas = Carpeta.objects.filter(creador=request.user)
-    return render(request, 'app/archivos.html', {'carpetas': carpetas})
-
-
-@csrf_exempt
-@login_required
-def eliminar_carpeta(request, carpeta_id):
-    if request.method == 'DELETE':
-        carpeta = get_object_or_404(Carpeta, id=carpeta_id, creador=request.user)
-        carpeta.delete()  # Esto debería eliminar los archivos dentro de la carpeta debido a CASCADE
-        return JsonResponse({'status': 'success', 'message': 'Carpeta eliminada correctamente.'})
-
-    return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
-
-def descargar_archivo(request, archivo_id):
-    try:
-        archivo = Archivo.objects.get(id=archivo_id)
-        response = FileResponse(archivo.archivo, as_attachment=True)
-        response['Content-Disposition'] = f'attachment; filename="{archivo.nombre}"'
-        return response
-    except Archivo.DoesNotExist:
-        raise Http404("El archivo no existe.")
-
-@csrf_exempt
-@login_required
-def eliminar_archivo(request, archivo_id):
+def subir_archivo(request, carpeta_id=None):
     if request.method == 'POST':
         try:
-            archivo = Archivo.objects.get(id=archivo_id, creador=request.user)
-            archivo.delete()
-            return JsonResponse({'status': 'success', 'message': 'Archivo eliminado correctamente.'})
-        except Archivo.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'El archivo no existe.'}, status=404)
+            # Obtener la carpeta donde se subirá el archivo, si existe
+            carpeta = get_object_or_404(Carpeta, id=carpeta_id) if carpeta_id else None
+
+            archivo = request.FILES.get('archivo')
+            if not archivo:
+                return JsonResponse({'status': 'error', 'message': 'No se proporcionó ningún archivo.'}, status=400)
+
+            # Crear y guardar el archivo, vinculándolo con la carpeta si existe
+            nuevo_archivo = Archivo.objects.create(
+                nombre=archivo.name,
+                archivo=archivo,
+                carpeta=carpeta,  # Puede ser None si no está asignado a ninguna carpeta
+                usuario=request.user  # Establecer el usuario autenticado como creador
+            )
+            return JsonResponse({'status': 'success', 'message': 'Archivo subido correctamente.'})
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
+
+@csrf_exempt
+@login_required
+def ver_carpeta(request, carpeta_id):
+    carpeta = get_object_or_404(Carpeta, id=carpeta_id)
+    archivos = carpeta.archivos.all()  # Usamos el related_name definido en el modelo
+
+    if request.method == 'POST':
+        # Manejar la subida de archivos dentro de una carpeta específica
+        archivo = request.FILES.get('archivo')
+        if archivo:
+            nuevo_archivo = Archivo.objects.create(
+                nombre=archivo.name,
+                archivo=archivo,
+                tamano=round(archivo.size / 1024, 2),  # Convertir a KB
+                carpeta=carpeta,
+                usuario=request.user  # Asegurarse de registrar el usuario que sube el archivo
+            )
+            return JsonResponse({'status': 'success', 'message': 'Archivo subido exitosamente.'})
+
+        return JsonResponse({'status': 'error', 'message': 'Error al subir el archivo.'}, status=400)
+
+    context = {
+        'carpeta': carpeta,
+        'archivos': archivos
+    }
+    return render(request, 'app/ver_carpeta.html', context)

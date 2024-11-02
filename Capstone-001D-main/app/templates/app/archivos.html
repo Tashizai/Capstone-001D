@@ -14,200 +14,215 @@
     <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
         <!-- Botones a la izquierda -->
         <div class="flex flex-col space-y-4">
-            <button id="subirArchivoDirecto" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Subir archivo</button>
-            <button id="crearCarpetaBtn" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">Crear carpeta</button>
+            <button id="subirArchivoDirecto"
+                class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Subir archivo</button>
+            <button id="crearCarpetaBtn" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">Crear
+                carpeta</button>
             <button class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Mis Archivos</button>
             <button class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Compartidos Conmigo</button>
         </div>
 
         <!-- Listado de carpetas y archivos -->
         <div class="flex-1">
-            <!-- Carpetas -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-                {% for carpeta in carpetas %}
-                <div class="bg-white p-4 rounded-lg shadow-md flex items-center justify-between">
-                    <div class="font-semibold">{{ carpeta.nombre }}</div>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h2m4 0h10M5 7a2 2 0 100-4 2 2 0 000 4zM7 11v10m4-10v10m4-10v10m4-10v10" />
-                    </svg>
-                </div>
-                {% endfor %}
-            </div>
-
-            <!-- Tabla de archivos -->
-            <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-                <thead class="bg-gray-200">
-                    <tr>
-                        <th class="py-2 px-4 text-left font-semibold">Nombre Archivo</th>
-                        <th class="py-2 px-4 text-left font-semibold">Fecha</th>
-                        <th class="py-2 px-4 text-left font-semibold">Tamaño</th>
-                        <th class="py-2 px-4 text-left font-semibold">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for archivo in archivos %}
-                    <tr class="border-b">
-                        <td class="py-2 px-4">{{ archivo.nombre }}</td>
-                        <td class="py-2 px-4">{{ archivo.fecha_subida|date:"d M Y" }}</td> <!-- Mostrar la fecha de subida -->
-                        <td class="py-2 px-4">{{ archivo.tamano }} KB</td>
-                        <td class="py-2 px-4 flex space-x-2">
-                            <!-- Botón para descargar -->
-                            <a href="#" class="text-blue-600 hover:text-blue-800">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m0 0l-6-6m6 6l6-6" />
-                                </svg>
-                            </a>
-                            <!-- Botón para eliminar -->
-                            <a href="#" class="text-red-600 hover:text-red-800">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </a>
-                        </td>
-                    </tr>
+            <!-- Listado de carpetas y archivos -->
+            <div class="flex-1">
+                <!-- Carpetas -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+                    {% for carpeta in carpetas %}
+                    <a href="{% url 'ver_carpeta' carpeta.id %}"
+                        class="bg-white p-4 rounded-lg shadow-md flex items-center justify-between">
+                        <div class="font-semibold">{{ carpeta.nombre }}</div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 7h2m4 0h10M5 7a2 2 0 100-4 2 2 0 000 4zM7 11v10m4-10v10m4-10v10m4-10v10" />
+                        </svg>
+                    </a>
                     {% endfor %}
-                </tbody>
-            </table>
+                </div>
+
+                <!-- Tabla de archivos -->
+                <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="py-2 px-4 text-left font-semibold">Nombre Archivo</th>
+                            <th class="py-2 px-4 text-left font-semibold">Fecha</th>
+                            <th class="py-2 px-4 text-left font-semibold">Tamaño</th>
+                            <th class="py-2 px-4 text-left font-semibold">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for archivo in archivos %}
+                        <tr class="border-b">
+                            <td class="py-2 px-4">{{ archivo.nombre }}</td>
+                            <td class="py-2 px-4">{{ archivo.fecha }}</td>
+                            <td class="py-2 px-4">{{ archivo.tamano }} KB</td>
+                            <td class="py-2 px-4 flex space-x-2">
+                                <!-- Botón para descargar -->
+                                <a href="{{ archivo.archivo.url }}" download class="text-blue-600 hover:text-blue-800">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m0 0l-6-6m6 6l6-6" />
+                                    </svg>
+                                </a>
+                                <!-- Botón para eliminar -->
+                                <a href="#" class="text-red-600 hover:text-red-800">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Modal para crear carpeta -->
-<div id="crearCarpetaModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-1/3 mx-auto my-auto">
-        <h2 class="text-xl font-semibold mb-4">Crear Carpeta</h2>
-        <form id="crearCarpetaForm">
-            {% csrf_token %}
-            <input type="text" id="nombreCarpetaInput" class="w-full p-2 border mb-4" placeholder="Nombre de la carpeta" />
-            <div class="flex justify-end space-x-4">
-                <button type="button" id="cerrarModalCarpeta" class="bg-red-500 text-white px-4 py-2 rounded-lg">Cancelar</button>
-                <button type="button" id="guardarCarpetaBtn" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Guardar</button>
-            </div>
-        </form>
+    <!-- Modal para crear carpeta -->
+    <div id="crearCarpetaModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-1/3 mx-auto my-auto">
+            <h2 class="text-xl font-semibold mb-4">Crear Carpeta</h2>
+            <form id="crearCarpetaForm">
+                {% csrf_token %}
+                <input type="text" id="nombreCarpetaInput" class="w-full p-2 border mb-4"
+                    placeholder="Nombre de la carpeta" />
+                <div class="flex justify-end space-x-4">
+                    <button type="button" id="cerrarModalCarpeta"
+                        class="bg-red-500 text-white px-4 py-2 rounded-lg">Cancelar</button>
+                    <button type="button" id="guardarCarpetaBtn"
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg">Guardar</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
 
-<!-- Script para funcionalidad -->
-<!-- Script para funcionalidad -->
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const subirArchivoDirectoBtn = document.getElementById('subirArchivoDirecto');
-        const uploadFileInput = document.getElementById('uploadFileInput');
-        const crearCarpetaBtn = document.getElementById('crearCarpetaBtn');
-        const crearCarpetaModal = document.getElementById('crearCarpetaModal');
-        const cerrarModalCarpetaBtn = document.getElementById('cerrarModalCarpeta');
-        const guardarCarpetaBtn = document.getElementById('guardarCarpetaBtn');
-        const nombreCarpetaInput = document.getElementById('nombreCarpetaInput');
-        const crearCarpetaForm = document.getElementById('crearCarpetaForm');
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const subirArchivoDirectoBtn = document.getElementById('subirArchivoDirecto');
+            const uploadFileInput = document.getElementById('uploadFileInput');
+            const crearCarpetaBtn = document.getElementById('crearCarpetaBtn');
+            const crearCarpetaModal = document.getElementById('crearCarpetaModal');
+            const cerrarModalCarpetaBtn = document.getElementById('cerrarModalCarpeta');
+            const guardarCarpetaBtn = document.getElementById('guardarCarpetaBtn');
+            const nombreCarpetaInput = document.getElementById('nombreCarpetaInput');
+            const crearCarpetaForm = document.getElementById('crearCarpetaForm');
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-        // Obtener el CSRF token de la cookie
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
+            let carpetaId = null;
+
+            // Obtener el CSRF token de la cookie
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
                     }
                 }
+                return cookieValue;
             }
-            return cookieValue;
-        }
 
-        const csrfToken = getCookie('csrftoken');
+            // Subir archivo desde el input oculto
+            subirArchivoDirectoBtn.addEventListener('click', function () {
+                uploadFileInput.click();
+            });
 
-        // Subir archivo desde el input oculto
-        subirArchivoDirectoBtn.addEventListener('click', function () {
-            uploadFileInput.click();
-        });
+            // Cuando se selecciona un archivo
+            uploadFileInput.addEventListener('change', function (event) {
+                if (event.target.files.length > 0) {
+                    const formData = new FormData();
+                    formData.append('archivo', event.target.files[0]);
 
-        // Cuando se selecciona un archivo
-        uploadFileInput.addEventListener('change', function (event) {
-            if (event.target.files.length > 0) {
-                const formData = new FormData();
-                formData.append('archivo', event.target.files[0]);
-
-                // Realizar la petición POST para subir el archivo
-                fetch("{% url 'subir_archivo' %}", {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrfToken,
-                    },
-                    body: formData,
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Error en la respuesta del servidor');
+                    let url = "{% url 'subir_archivo' %}";
+                    if (carpetaId) {
+                        url = `{% url 'subir_archivo' %}${carpetaId}/`;
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.status === 'success') {
-                        alert('Archivo subido exitosamente.');
-                        // Recargar la página para mostrar el archivo nuevo
-                        window.location.reload();
-                    } else {
-                        alert('Error al subir el archivo: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Ocurrió un error inesperado al subir el archivo.');
-                });
-            }
-        });
 
-        // Mostrar modal para crear carpeta
-        crearCarpetaBtn.addEventListener('click', function () {
-            crearCarpetaModal.classList.remove('hidden');
-            crearCarpetaModal.classList.add('flex');
-        });
+                    // Realizar la petición POST para subir el archivo
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                        },
+                        body: formData,
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Error en la respuesta del servidor');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.status === 'success') {
+                                alert('Archivo subido exitosamente.');
+                                // Recargar la página para mostrar el archivo nuevo
+                                window.location.reload();
+                            } else {
+                                alert('Error al subir el archivo: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Ocurrió un error inesperado al subir el archivo.');
+                        });
+                }
+            });
 
-        // Cerrar modal de crear carpeta
-        cerrarModalCarpetaBtn.addEventListener('click', function () {
-            crearCarpetaModal.classList.add('hidden');
-            crearCarpetaModal.classList.remove('flex');
-            nombreCarpetaInput.value = ''; // Limpiar el campo del nombre de la carpeta
-        });
+            // Mostrar modal para crear carpeta
+            crearCarpetaBtn.addEventListener('click', function () {
+                crearCarpetaModal.classList.remove('hidden');
+                crearCarpetaModal.classList.add('flex');
+            });
 
-        // Guardar carpeta
-        guardarCarpetaBtn.addEventListener('click', function () {
-            const nombreCarpeta = nombreCarpetaInput.value.trim();
-            if (nombreCarpeta) {
-                // Obtener el token CSRF desde el formulario
-                const csrfToken = crearCarpetaForm.querySelector('[name=csrfmiddlewaretoken]').value; 
-                fetch("{% url 'crear_carpeta' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                    },
-                    body: JSON.stringify({ nombre: nombreCarpeta }),
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Error en la respuesta del servidor');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.status === 'success') {
-                        window.location.reload();
-                    } else {
-                        alert('Error al crear la carpeta: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Ocurrió un error inesperado al crear la carpeta.');
-                });
-            } else {
-                alert('Por favor, ingrese un nombre para la carpeta.');
-            }
-        });
-    });
-</script>
+            // Cerrar modal de crear carpeta
+            cerrarModalCarpetaBtn.addEventListener('click', function () {
+                crearCarpetaModal.classList.add('hidden');
+                crearCarpetaModal.classList.remove('flex');
+                nombreCarpetaInput.value = ''; // Limpiar el campo del nombre de la carpeta
+            });
 
-{% endblock %}
+            // Guardar carpeta
+            guardarCarpetaBtn.addEventListener('click', function () {
+                const nombreCarpeta = nombreCarpetaInput.value.trim();
+                if (nombreCarpeta) {
+                    fetch("{% url 'crear_carpeta' %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken,
+                        },
+                        body: JSON.stringify({ nombre: nombreCarpeta }),
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Error en la respuesta del servidor');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.status === 'success') {
+                                window.location.reload();
+                            } else {
+                                alert('Error al crear la carpeta: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Ocurrió un error inesperado al crear la carpeta.');
+                        });
+                } else {
+                    alert('Por favor, ingrese un nombre para la carpeta.');
+                }
+            });
+        });
+    </script>
+    {% endblock %}

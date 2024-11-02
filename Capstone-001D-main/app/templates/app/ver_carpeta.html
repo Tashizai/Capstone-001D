@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ carpeta.nombre }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100 p-8">
+    <!-- Título y botón para volver -->
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-3xl font-semibold">{{ carpeta.nombre }}</h1>
+        <a href="{% url 'vista_archivos' %}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Volver a Archivos</a>
+        <input type="file" id="uploadFileInput" name="archivo" hidden>
+    </div>
+
+    <!-- Botones -->
+    <div class="flex flex-col space-y-4 mb-8">
+        <button id="subirArchivoDirecto" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Subir archivo</button>
+    </div>
+
+    <!-- Listado de archivos -->
+    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+        <thead class="bg-gray-200">
+            <tr>
+                <th class="py-2 px-4 text-left font-semibold">Nombre Archivo</th>
+                <th class="py-2 px-4 text-left font-semibold">Fecha</th>
+                <th class="py-2 px-4 text-left font-semibold">Tamaño</th>
+                <th class="py-2 px-4 text-left font-semibold">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for archivo in archivos %}
+            <tr class="border-b">
+                <td class="py-2 px-4">{{ archivo.nombre }}</td>
+                <td class="py-2 px-4">{{ archivo.fecha }}</td>
+                <td class="py-2 px-4">{{ archivo.tamano }} KB</td>
+                <td class="py-2 px-4 flex space-x-2">
+                    <a href="{{ archivo.archivo.url }}" download class="text-blue-600 hover:text-blue-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m0 0l-6-6m6 6l6-6" />
+                        </svg>
+                    </a>
+                    <!-- Botón para eliminar -->
+                    <a href="#" class="text-red-600 hover:text-red-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const subirArchivoDirectoBtn = document.getElementById('subirArchivoDirecto');
+        const uploadFileInput = document.getElementById('uploadFileInput');
+
+        // Obtener el CSRF token de la cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrfToken = getCookie('csrftoken');
+
+        // Subir archivo desde el input oculto
+        subirArchivoDirectoBtn.addEventListener('click', function () {
+            uploadFileInput.click();
+        });
+
+        // Cuando se selecciona un archivo
+        uploadFileInput.addEventListener('change', function (event) {
+            if (event.target.files.length > 0) {
+                const formData = new FormData();
+                formData.append('archivo', event.target.files[0]);
+
+                // Realizar la petición POST para subir el archivo
+                fetch(window.location.href, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: formData,
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la respuesta del servidor');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Archivo subido exitosamente.');
+                        // Recargar la página para mostrar el archivo nuevo
+                        window.location.reload();
+                    } else {
+                        alert('Error al subir el archivo: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Ocurrió un error inesperado al subir el archivo.');
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

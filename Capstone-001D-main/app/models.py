@@ -117,7 +117,8 @@ User = get_user_model()
 
 class Carpeta(models.Model):
     nombre = models.CharField(max_length=255)
-    creador = models.ForeignKey(User, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)  # Cambiar a `usuario` si antes era `creador`
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.nombre
@@ -125,10 +126,7 @@ class Carpeta(models.Model):
 class Archivo(models.Model):
     nombre = models.CharField(max_length=255)
     archivo = models.FileField(upload_to='archivos/')
-    tamano = models.PositiveIntegerField()  # Campo para almacenar el tamaño del archivo
+    tamano = models.FloatField(default=0)  # Tamaño en KB con valor predeterminado
     fecha_subida = models.DateTimeField(auto_now_add=True)
-    creador = models.ForeignKey(User, on_delete=models.CASCADE)
-    carpeta = models.ForeignKey(Carpeta, on_delete=models.CASCADE, null=True, blank=True)
-
-    def __str__(self):
-        return self.nombre
+    usuario = models.ForeignKey(Usuarios, on_delete=models.CASCADE)  # Usuario que subió el archivo
+    carpeta = models.ForeignKey(Carpeta, on_delete=models.CASCADE, related_name='archivos', null=True, blank=True)
