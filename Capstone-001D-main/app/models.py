@@ -117,11 +117,14 @@ User = get_user_model()
 
 class Carpeta(models.Model):
     nombre = models.CharField(max_length=255)
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)  # Cambiar a `usuario` si antes era `creador`
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)  # Usuario que creó la carpeta
     fecha_creacion = models.DateTimeField(auto_now_add=True)
+    compartido_con = models.ManyToManyField(User, related_name='carpetas_compartidas', blank=True)
+    carpeta_padre = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='subcarpetas')
 
     def __str__(self):
         return self.nombre
+    
 
 class Archivo(models.Model):
     nombre = models.CharField(max_length=255)
@@ -130,3 +133,4 @@ class Archivo(models.Model):
     fecha_subida = models.DateTimeField(auto_now_add=True)
     usuario = models.ForeignKey(Usuarios, on_delete=models.CASCADE)  # Usuario que subió el archivo
     carpeta = models.ForeignKey(Carpeta, on_delete=models.CASCADE, related_name='archivos', null=True, blank=True)
+    compartido_con = models.ManyToManyField(Usuarios, related_name='archivos_compartidos', blank=True)  # Añadido

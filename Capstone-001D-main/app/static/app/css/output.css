@@ -749,8 +749,16 @@ video {
   margin-bottom: 3rem;
 }
 
+.mb-16 {
+  margin-bottom: 4rem;
+}
+
 .mb-2 {
   margin-bottom: 0.5rem;
+}
+
+.mb-20 {
+  margin-bottom: 5rem;
 }
 
 .mb-4 {
@@ -765,20 +773,56 @@ video {
   margin-bottom: 2rem;
 }
 
+.ml-0 {
+  margin-left: 0px;
+}
+
+.ml-12 {
+  margin-left: 3rem;
+}
+
+.ml-16 {
+  margin-left: 4rem;
+}
+
 .ml-2 {
   margin-left: 0.5rem;
+}
+
+.ml-24 {
+  margin-left: 6rem;
 }
 
 .ml-4 {
   margin-left: 1rem;
 }
 
+.ml-6 {
+  margin-left: 1.5rem;
+}
+
+.ml-8 {
+  margin-left: 2rem;
+}
+
 .ml-auto {
   margin-left: auto;
 }
 
+.mr-12 {
+  margin-right: 3rem;
+}
+
 .mr-2 {
   margin-right: 0.5rem;
+}
+
+.mr-20 {
+  margin-right: 5rem;
+}
+
+.mr-24 {
+  margin-right: 6rem;
 }
 
 .mr-3 {
@@ -1031,6 +1075,10 @@ video {
 
 .w-6 {
   width: 1.5rem;
+}
+
+.w-60 {
+  width: 15rem;
 }
 
 .w-64 {
@@ -1329,6 +1377,12 @@ video {
   margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));
 }
 
+.space-y-10 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(2.5rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(2.5rem * var(--tw-space-y-reverse));
+}
+
 .space-y-2 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-y-reverse: 0;
   margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
@@ -1387,6 +1441,10 @@ video {
 
 .self-start {
   align-self: flex-start;
+}
+
+.self-center {
+  align-self: center;
 }
 
 .overflow-auto {
@@ -1626,6 +1684,11 @@ video {
   background-color: rgb(239 68 68 / var(--tw-bg-opacity));
 }
 
+.bg-red-600 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(220 38 38 / var(--tw-bg-opacity));
+}
+
 .bg-teal-500 {
   --tw-bg-opacity: 1;
   background-color: rgb(20 184 166 / var(--tw-bg-opacity));
@@ -1676,6 +1739,10 @@ video {
 
 .bg-opacity-90 {
   --tw-bg-opacity: 0.9;
+}
+
+.bg-gradient-to-b {
+  background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
 }
 
 .bg-gradient-to-br {
@@ -2374,13 +2441,62 @@ video {
   gap: 1rem;
 }
 
-button {
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+.carpetas-contenedor {
+  margin-top: 1rem;
+  /* Espaciado entre el título y las carpetas */
 }
 
-button:hover {
-  background-color: #2563eb;
+.botones-contenedor {
+  margin-left: 1rem;
+  /* Ajusta este valor según sea necesario */
+}
+
+/* Margen para separar la sección de carpetas/archivos del lado izquierdo */
+
+.contenido-contenedor {
+  margin-left: 2rem;
+  /* Ajusta según tus preferencias */
+}
+
+#compartirModal {
+  color: #2d3748;
+  /* Gris oscuro para asegurar visibilidad */
+}
+
+#compartirModal h2 {
+  color: #3182ce;
+  /* Azul para encabezados */
+}
+
+#compartirModal select {
+  color: #2d3748;
+  /* Asegura visibilidad del texto en el dropdown */
+}
+
+.carpetas-contenedor .carpeta {
+  position: relative;
+  padding-right: 40px;
+  /* Añadido para espacio del icono */
+}
+
+.carpetas-contenedor .acciones {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+}
+
+/* Asegurando visibilidad correcta del botón de eliminar */
+
+.confirmar-eliminar {
+  background-color: #dc2626;
+  /* Rojo */
+  color: white;
+}
+
+.confirmar-eliminar:hover {
+  background-color: #b91c1c;
+  /* Rojo más oscuro */
 }
 
 .hover\:scale-105:hover {
@@ -2392,6 +2508,11 @@ button:hover {
 .hover\:bg-blue-200:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(191 219 254 / var(--tw-bg-opacity));
+}
+
+.hover\:bg-blue-50:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(239 246 255 / var(--tw-bg-opacity));
 }
 
 .hover\:bg-blue-600:hover {
@@ -2424,6 +2545,11 @@ button:hover {
   background-color: rgb(22 163 74 / var(--tw-bg-opacity));
 }
 
+.hover\:bg-green-700:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(21 128 61 / var(--tw-bg-opacity));
+}
+
 .hover\:bg-indigo-800:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(55 48 163 / var(--tw-bg-opacity));
@@ -2437,6 +2563,11 @@ button:hover {
 .hover\:bg-red-600:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(220 38 38 / var(--tw-bg-opacity));
+}
+
+.hover\:bg-red-700:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(185 28 28 / var(--tw-bg-opacity));
 }
 
 .hover\:bg-yellow-600:hover {
@@ -2454,6 +2585,11 @@ button:hover {
   --tw-gradient-to: #1e40af var(--tw-gradient-to-position);
 }
 
+.hover\:text-blue-700:hover {
+  --tw-text-opacity: 1;
+  color: rgb(29 78 216 / var(--tw-text-opacity));
+}
+
 .hover\:text-blue-800:hover {
   --tw-text-opacity: 1;
   color: rgb(30 64 175 / var(--tw-text-opacity));
@@ -2462,6 +2598,16 @@ button:hover {
 .hover\:text-gray-300:hover {
   --tw-text-opacity: 1;
   color: rgb(209 213 219 / var(--tw-text-opacity));
+}
+
+.hover\:text-green-700:hover {
+  --tw-text-opacity: 1;
+  color: rgb(21 128 61 / var(--tw-text-opacity));
+}
+
+.hover\:text-red-700:hover {
+  --tw-text-opacity: 1;
+  color: rgb(185 28 28 / var(--tw-text-opacity));
 }
 
 .hover\:text-red-800:hover {
@@ -2544,6 +2690,10 @@ button:hover {
     top: 100%;
   }
 
+  .md\:mb-0 {
+    margin-bottom: 0px;
+  }
+
   .md\:mr-4 {
     margin-right: 1rem;
   }
@@ -2586,12 +2736,6 @@ button:hover {
 
   .md\:flex-row {
     flex-direction: row;
-  }
-
-  .md\:space-x-4 > :not([hidden]) ~ :not([hidden]) {
-    --tw-space-x-reverse: 0;
-    margin-right: calc(1rem * var(--tw-space-x-reverse));
-    margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)));
   }
 
   .md\:space-x-6 > :not([hidden]) ~ :not([hidden]) {
