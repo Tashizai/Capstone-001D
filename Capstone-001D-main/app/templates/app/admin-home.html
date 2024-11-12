@@ -1,180 +1,146 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Panel de Administrador{% endblock %}
-
 {% block content %}
-<!-- Contenedor del saludo y perfil -->
-<div class="flex items-center justify-start space-x-6 px-16 mb-10">
-    <img src="{% static 'app/img/admin.jpg' %}" alt="Admin" class="w-24 h-24 rounded-full shadow-lg">
-    <h1 class="text-5xl font-light text-white">Bienvenido "{{ user.nombre }}" @admin</h1>
-</div>
+<!-- Contenedor Principal, ocupa todo el ancho disponible y se distribuye mejor -->
+<div class="container mx-auto mt-12 px-8 flex flex-col items-center">
 
-<!-- Cuadro Principal -->
-<div class="container mx-auto flex justify-center items-start mt-12">
-    <div class="bg-white bg-opacity-70 shadow-2xl rounded-lg p-12 w-full max-w-7xl grid grid-cols-1 md:grid-cols-3 gap-10">
+    <!-- Contenedor Principal de la Vista -->
+    <div class="w-full grid grid-cols-1 lg:grid-cols-3 gap-8 items-start py-20">
 
-        <!-- Botones de Funciones -->
-        <div class="col-span-2 space-y-6">
-            <button id="abrir-modal" class="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold py-4 rounded-lg transition-transform transform hover:scale-105">
-                + Añadir Usuario
+        <!-- Panel de Bienvenida -->
+        <div class="bg-opacity-70 rounded-lg p-6 flex flex-col items-center lg:items-start">
+            <div class="flex items-center space-x-4 mb-6">
+                <img src="{% static 'app/img/admin.jpg' %}" alt="Admin" class="w-20 h-20 rounded-full shadow-lg">
+                <h1 class="text-3xl font-light text-blue-900">Bienvenido "{{ user.nombre }}"</h1>
+            </div>
+            <div class="relative w-full h-40 mt-6">
+                <div class="bubbles w-full h-full absolute"></div>
+                <div class="absolute inset-0 z-10 flex items-center justify-center">
+                    <h2 class="text-3xl text-blue-800 font-semibold text-center">Panel del Administrador</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de Funciones Principales -->
+        <div class="flex flex-col space-y-8 items-center justify-center p-14">
+            <button class="w-full max-w-md bg-gradient-to-r from-green-400 to-blue-500 text-white font-semibold py-4 rounded-lg transition-transform transform hover:scale-105">
+                <a href="{% url 'ver_horario' usuario_id=request.user.id_usuario %}">Ver Horario</a>
             </button>
-            <button class="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold py-4 rounded-lg transition-transform transform hover:scale-105">
-                <a href="{% url 'ver_horario' usuario_id=request.user.id_usuario %}">
-                    Horario
-                </a>
-            </button>
-            <button class="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold py-4 rounded-lg transition-transform transform hover:scale-105">
+            <button class="w-full max-w-md bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-semibold py-4 rounded-lg transition-transform transform hover:scale-105">
                 Añadir Anuncio
             </button>
-            <button class="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold py-4 rounded-lg transition-transform transform hover:scale-105">
-                Subir Archivos
-            </button>
-            <button class="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold py-4 rounded-lg transition-transform transform hover:scale-105">
-                <a href="{% url 'calendario_admin' %}">
-                    Añadir Evento en Calendario
-                </a>
-            </button>
-            <button class="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold py-4 rounded-lg transition-transform transform hover:scale-105">
-                Crear Sala de Videollamada
-            </button>
         </div>
-        <!-- Lista de Usuarios con Scroll y Búsqueda -->
-        <div class="space-y-4">
-            <h2 class="text-xl font-semibold">Lista de Usuarios</h2>
-            <input type="text" id="buscar-usuario" placeholder="Buscar Usuario" class="w-full p-3 rounded-lg border focus:outline-none">
-            <div id="lista-usuarios" class="overflow-y-auto h-72 space-y-3">
-                {% for usuario in usuarios %}
-                    <a href="{% url 'ver_horario' usuario.id_usuario %}" 
-                       class="block bg-white shadow-md p-3 rounded-lg hover:bg-gray-100 transition">
-                        {{ usuario.nombre }} {{ usuario.apellido }} - {{ usuario.rol }}
-                    </a>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Modal Overlay -->
-<div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-30 hidden flex items-center justify-center z-50 transition-opacity duration-300">
-    <div class="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full transform transition-all duration-500 scale-90 opacity-0" id="modal-content">
-        <h2 class="text-3xl font-semibold text-center mb-6 text-gray-800">Añadir Usuario</h2>
-
-        <form id="form-crear-usuario">
-            {% csrf_token %}
+        <!-- Lista de Usuarios con Búsqueda -->
+        <div class="w-full bg-white bg-opacity-70 shadow-md rounded-lg p-6 ">
             <div class="space-y-4">
-                <input type="text" name="run" placeholder="RUT (sin puntos ni guion)" required 
-                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-        
-                <input type="text" name="nombre" placeholder="Nombre" required 
-                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-        
-                <input type="text" name="apellido" placeholder="Apellido" required 
-                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-        
-                <input type="email" name="email" placeholder="Correo Electrónico" required 
-                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-        
-                <select name="rol" id="rol" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-                    <option value="" disabled selected>Seleccionar Rol</option>
-                    <option value="profesor">Profesor</option>
-                    <option value="directivo">Directivo</option>
-                    <option value="asistente">Asistente</option>
-                </select>
-        
-                <input type="password" name="password" placeholder="Contraseña" required 
-                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                <input type="text" id="buscar-usuario" placeholder="Buscar Usuario" class="w-full p-4 rounded-lg border focus:outline-none">
+                <div id="lista-usuarios" class="overflow-y-auto h-72 bg-gray-100 rounded-lg p-4 shadow-lg space-y-3">
+                    {% for usuario in usuarios %}
+                        <a href="{% url 'ver_horario' usuario.id_usuario %}" 
+                           class="block bg-white shadow-md p-3 rounded-lg hover:bg-gray-200 transition">
+                            {{ usuario.nombre }} {{ usuario.apellido }} - {{ usuario.rol }}
+                        </a>
+                    {% endfor %}
+                </div>
             </div>
-        
-            <div class="flex justify-end space-x-4 mt-6">
-                <button type="button" id="cerrar-modal" 
-                        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow-md transition-transform transform hover:scale-105">
-                    Cancelar
-                </button>
-                <button type="submit" 
-                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md transition-transform transform hover:scale-105">
-                    Guardar
-                </button>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<!-- JavaScript -->
-<script>
-    const abrirModal = document.getElementById('abrir-modal');
-    const cerrarModal = document.getElementById('cerrar-modal');
-    const modalOverlay = document.getElementById('modal-overlay');
-    const modalContent = document.getElementById('modal-content');
+<!-- CSS para la Animación de Burbujas -->
+<style>
+    .bubbles {
+        position: relative;
+    }
 
-    abrirModal.addEventListener('click', () => {
-        modalOverlay.classList.remove('hidden');
-        setTimeout(() => {
-            modalContent.classList.remove('opacity-0', 'scale-90');
-        }, 10); // Delay para aplicar la animación
-    });
+    .bubbles::before, .bubbles::after, .bubbles span {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.5;
+        animation: floating 6s ease-in-out infinite;
+    }
 
-    cerrarModal.addEventListener('click', () => {
-        modalContent.classList.add('opacity-0', 'scale-90');
-        setTimeout(() => {
-            modalOverlay.classList.add('hidden');
-        }, 300); // Esperar a que termine la animación
-    });
+    .bubbles::before {
+        width: 120px;
+        height: 120px;
+        background: rgba(0, 150, 255, 0.3);
+        bottom: 10%;
+        left: 15%;
+        animation-duration: 8s;
+    }
 
-    document.getElementById('form-crear-usuario').addEventListener('submit', function (e) {
-    e.preventDefault();
+    .bubbles::after {
+        width: 180px;
+        height: 180px;
+        background: rgba(255, 100, 100, 0.3);
+        top: 10%;
+        right: 10%;
+        animation-duration: 10s;
+    }
 
-    const formData = new FormData(this);
+    .bubbles span:nth-child(1) {
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 223, 100, 0.4);
+        top: 40%;
+        left: 5%;
+        animation-duration: 15s;
+    }
 
-    fetch('/crear-usuario/', {
-        method: 'POST',
-        body: formData,
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            mostrarMensaje('Usuario creado exitosamente.', 'bg-green-500');
-            this.reset();  // Reiniciar el formulario
-        } else {
-            mostrarMensaje(`Error: ${data.message}`, 'bg-red-500');
+    .bubbles span:nth-child(2) {
+        width: 150px;
+        height: 150px;
+        background: rgba(100, 100, 255, 0.3);
+        top: 15%;
+        right: 8%;
+        animation-duration: 11s;
+    }
+
+    .bubbles span:nth-child(3) {
+        width: 130px;
+        height: 130px;
+        background: rgba(150, 100, 255, 0.3);
+        bottom: 25%;
+        right: 5%;
+        animation-duration: 13s;
+    }
+
+    .bubbles span:nth-child(4) {
+        width: 110px;
+        height: 110px;
+        background: rgba(50, 205, 50, 0.4);
+        top: 25%;
+        left: 15%;
+        animation-duration: 12s;
+    }
+
+    @keyframes floating {
+        0%, 100% {
+            transform: translateY(0);
         }
-    })
-    .catch(error => {
-        mostrarMensaje(`Error: ${error}`, 'bg-red-500');
-    });
-});
+        50% {
+            transform: translateY(-20px);
+        }
+    }
+</style>
 
-function mostrarMensaje(mensaje, claseColor) {
-    const mensajeDiv = document.createElement('div');
-    mensajeDiv.className = `fixed top-5 right-5 p-4 rounded-lg text-white shadow-lg transition-opacity duration-500 ${claseColor}`;
-    mensajeDiv.textContent = mensaje;
-
-    document.body.appendChild(mensajeDiv);
-
-    setTimeout(() => {
-        mensajeDiv.classList.add('opacity-0');
-        setTimeout(() => mensajeDiv.remove(), 500);
-    }, 3000);
-}
-</script>
-
+<!-- JavaScript para la Búsqueda -->
 <script>
-    const searchInput = document.getElementById('search-input');
-    const userList = document.getElementById('user-list');
+    document.getElementById('buscar-usuario').addEventListener('input', function () {
+        const filter = this.value.toLowerCase();
+        const usuarios = document.querySelectorAll('#lista-usuarios a');
 
-    searchInput.addEventListener('input', function () {
-        const filter = searchInput.value.toLowerCase();
-        const users = userList.getElementsByClassName('rounded-lg');
-
-        for (let i = 0; i < users.length; i++) {
-            const userText = users[i].textContent || users[i].innerText;
-            if (userText.toLowerCase().indexOf(filter) > -1) {
-                users[i].style.display = '';
+        usuarios.forEach(usuario => {
+            const text = usuario.textContent.toLowerCase();
+            if (text.includes(filter)) {
+                usuario.style.display = '';
             } else {
-                users[i].style.display = 'none';
+                usuario.style.display = 'none';
             }
-        }
+        });
     });
 </script>
-
 {% endblock %}

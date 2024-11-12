@@ -11,6 +11,12 @@ import json
 from django.utils.timezone import now
 import calendar
 from datetime import date
+from .models import Anuncio
+from .forms import AnuncioForm
+from .models import Carpeta, Archivo
+from django.utils import timezone
+from django.http import FileResponse, Http404
+from django.http import HttpResponseForbidden
 
 
 def login_view(request):
@@ -248,12 +254,17 @@ def editar_horario(request):
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
 
-
+@login_required
 def calendario(request):
     today = date.today()
 
-    # Filtrar eventos creados por el usuario autenticado
-    eventos = Evento.objects.filter(creador=request.user)
+    # Filtrar eventos creados por el usuario o compartidos con el usuario autenticado
+    if request.user.is_staff:
+        # Si es admin, ve todos los eventos (propios y compartidos)
+        eventos = Evento.objects.filter(creador=request.user) | Evento.objects.filter(compartido_con=request.user)
+    else:
+        # Si es usuario normal, solo ve sus eventos o eventos compartidos con él
+        eventos = Evento.objects.filter(creador=request.user) | Evento.objects.filter(compartido_con=request.user)
 
     # Convertir el QuerySet a lista de diccionarios
     eventos_list = [
@@ -278,17 +289,18 @@ def calendario(request):
     _, dias_en_mes = calendar.monthrange(current_year, current_month)
 
     context = {
-        'eventos': json.dumps(eventos_list),  # Convertimos los eventos a JSON
-        'colegas': colegas,
-        'today': today,
-        'current_month': current_month,
-        'current_year': current_year,
-        'dias_del_mes': range(1, dias_en_mes + 1),
+    'eventos': json.dumps(eventos_list),  # Convertimos los eventos a JSON
+    'colegas': colegas,
+    'today': today,
+    'current_month': current_month,
+    'current_year': current_year,
+    'dias_del_mes': range(1, dias_en_mes + 1),
+    'es_admin': request.user.is_staff  # Añadir esta bandera al contexto para identificar si es admin
     }
 
     return render(request, 'app/calendario.html', context)
 
-@csrf_exempt
+@login_required
 def agregar_evento(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -315,7 +327,8 @@ def agregar_evento(request):
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
 
-@csrf_exempt
+
+@login_required
 def eliminar_evento(request, evento_id):
     if request.method == 'DELETE':
         try:
@@ -328,7 +341,7 @@ def eliminar_evento(request, evento_id):
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
 
 
-@csrf_exempt
+@login_required
 def editar_evento(request, evento_id):
     if request.method == 'POST':
         try:
@@ -393,105 +406,251 @@ def ver_horario_usuario_cualquiera(request, usuario_id):
     return render(request, 'app/horario_user.html', context)
 
 
-def calendario_admin(request):
-    today = date.today()
+def lista_anuncios(request):
+    anuncios = Anuncio.objects.all().order_by('-fecha_creacion')
+    ultimo_anuncio = anuncios.first()  # Obtener el último anuncio creado si existe
+    anuncios_json = json.dumps(list(anuncios.values('id', 'titulo', 'descripcion', 'autor__nombre', 'grupo_destinatario')))
+    return render(request, 'app/anuncios.html', {
+        'anuncios': anuncios,
+        'anuncios_json': anuncios_json,
+        'ultimo_anuncio': ultimo_anuncio
+    })
 
-    # Filtrar eventos creados por el usuario autenticado
-    eventos = Evento.objects.filter(creador=request.user)
-
-    # Convertir el QuerySet a lista de diccionarios
-    eventos_list = [
-        {
-            "id": evento.id,
-            "titulo": evento.titulo,
-            "descripcion": evento.descripcion,
-            "fecha": evento.fecha.strftime("%Y-%m-%d"),
-        }
-        for evento in eventos
-    ]
-
-    # Obtener colegas para compartir eventos (excluyendo al usuario actual)
-    colegas = Usuarios.objects.exclude(id_usuario=request.user.id_usuario)
-
-    # Preparar año y mes actuales
-    current_year = today.year
-    current_month = today.month
-
-    # Obtener número de días del mes actual
-    import calendar
-    _, dias_en_mes = calendar.monthrange(current_year, current_month)
-
-    context = {
-        'eventos': json.dumps(eventos_list),  # Convertimos los eventos a JSON
-        'colegas': colegas,
-        'today': today,
-        'current_month': current_month,
-        'current_year': current_year,
-        'dias_del_mes': range(1, dias_en_mes + 1),
-    }
-
-    return render(request, 'app/calendario_admin.html', context)
 
 @csrf_exempt
-def agregar_evento_admin(request):
+def crear_anuncio(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         titulo = data.get('titulo')
         descripcion = data.get('descripcion')
-        fecha = data.get('fecha')
-        compartido_ids = data.get('compartido_con', [])
+        grupo_destinatario = data.get('grupo')
+        
+        # Crear el anuncio
+        anuncio = Anuncio.objects.create(
+            titulo=titulo,
+            descripcion=descripcion,
+            grupo_destinatario=grupo_destinatario,
+            autor=request.user
+        )
+        return JsonResponse({'message': 'Anuncio creado correctamente'}, status=201)
 
-        try:
-            evento = Evento.objects.create(
-                titulo=titulo,
-                descripcion=descripcion,
-                fecha=fecha,
-                creador=request.user
-            )
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
 
-            if compartido_ids:
-                usuarios = Usuarios.objects.filter(id_usuario__in=compartido_ids)
-                evento.compartido_con.set(usuarios)
-
-            return JsonResponse({'status': 'success', 'message': 'Evento añadido correctamente.'})
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
-
-    return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
 
 @csrf_exempt
-def eliminar_evento_admin(request, evento_id):
+def eliminar_anuncio(request, anuncio_id):
     if request.method == 'DELETE':
         try:
-            evento = get_object_or_404(Evento, id=evento_id, creador=request.user)
-            evento.delete()
-            return JsonResponse({'status': 'success', 'message': 'Evento eliminado correctamente.'})
+            anuncio = get_object_or_404(Anuncio, id=anuncio_id)
+            anuncio.delete()
+            return JsonResponse({'status': 'success', 'message': 'Anuncio eliminado correctamente.'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
+
+
+
+@login_required
+def archivos_view(request):
+    carpetas = Carpeta.objects.filter(usuario=request.user)
+    archivos = Archivo.objects.filter(usuario=request.user, carpeta__isnull=True)  # Archivos sin carpeta
+    usuarios = Usuarios.objects.exclude(id_usuario=request.user.id_usuario)  # Ajusta el campo `id` a `id_usuario`
+    context = {
+        'carpetas': carpetas,
+        'archivos': archivos,
+        'usuarios': usuarios,
+    }
+    return render(request, 'app/archivos.html', context)
+
+@csrf_exempt
+@login_required
+def crear_carpeta(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            nombre = data.get('nombre')
+
+            if not nombre:
+                return JsonResponse({'status': 'error', 'message': 'Debe proporcionar un nombre para la carpeta.'}, status=400)
+
+            # Crear la carpeta y asignar el usuario autenticado
+            nueva_carpeta = Carpeta.objects.create(
+                nombre=nombre,
+                usuario=request.user  # Establecer el usuario autenticado como creador
+            )
+
+            return JsonResponse({'status': 'success', 'message': 'Carpeta creada correctamente.'})
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Datos mal formados.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
+
+@csrf_exempt
+@login_required
+def subir_archivo(request):
+    if request.method == 'POST':
+        archivo = request.FILES.get('archivo')
+        if archivo:
+            try:
+                nuevo_archivo = Archivo.objects.create(
+                    nombre=archivo.name,
+                    archivo=archivo,
+                    tamano=round(archivo.size / 1024, 2),  # Tamaño en KB
+                    usuario=request.user  # Registrar el usuario que sube el archivo
+                )
+                return JsonResponse({'status': 'success', 'message': 'Archivo subido exitosamente.'})
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        return JsonResponse({'status': 'error', 'message': 'No se proporcionó archivo.'}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
+
+@csrf_exempt
+@login_required
+def subir_archivo_a_carpeta(request, carpeta_id):
+    if request.method == 'POST':
+        carpeta = get_object_or_404(Carpeta, id=carpeta_id)
+        archivo = request.FILES.get('archivo')
+        if archivo:
+            try:
+                nuevo_archivo = Archivo.objects.create(
+                    nombre=archivo.name,
+                    archivo=archivo,
+                    tamano=round(archivo.size / 1024, 2),  # Tamaño en KB
+                    carpeta=carpeta,
+                    usuario=request.user  # Registrar el usuario que sube el archivo
+                )
+                return JsonResponse({'status': 'success', 'message': 'Archivo subido exitosamente.'})
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        return JsonResponse({'status': 'error', 'message': 'No se proporcionó archivo.'}, status=400)
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
 
 
 @csrf_exempt
-def editar_evento_admin(request, evento_id):
+@login_required
+def ver_carpeta(request, carpeta_id):
+    carpeta = get_object_or_404(Carpeta, id=carpeta_id)
+
+    # Verificar si el usuario tiene acceso a la carpeta (propietario o compartida)
+    if carpeta.usuario != request.user and request.user not in carpeta.compartido_con.all():
+        return HttpResponseForbidden("No tienes permisos para acceder a esta carpeta.")
+    
+    archivos = carpeta.archivos.all()  # Usamos el related_name definido en el modelo
+    subcarpetas = carpeta.subcarpetas.all()  # Obtener todas las subcarpetas de la carpeta actual
+    usuarios = Usuarios.objects.all()  # Obtener todos los usuarios para compartir
+
+    if request.method == 'POST':
+        # Manejar la subida de archivos dentro de una carpeta específica
+        archivo = request.FILES.get('archivo')
+        if archivo:
+            # Solo el propietario puede subir archivos
+            if carpeta.usuario == request.user:
+                nuevo_archivo = Archivo.objects.create(
+                    nombre=archivo.name,
+                    archivo=archivo,
+                    tamano=round(archivo.size / 1024, 2),  # Convertir a KB
+                    carpeta=carpeta,
+                    usuario=request.user  # Registrar el usuario que sube el archivo
+                )
+                return JsonResponse({'status': 'success', 'message': 'Archivo subido exitosamente.'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'No tienes permiso para subir archivos en esta carpeta.'}, status=403)
+
+        return JsonResponse({'status': 'error', 'message': 'Error al subir el archivo.'}, status=400)
+
+    context = {
+        'carpeta': carpeta,
+        'archivos': archivos,
+        'subcarpetas': subcarpetas,
+        'usuarios': usuarios  # Agregar usuarios al contexto
+    }
+    return render(request, 'app/ver_carpeta.html', context)
+
+
+@login_required
+def eliminar_archivo(request, archivo_id):
+    if request.method == 'DELETE':
+        try:
+            archivo = Archivo.objects.get(id=archivo_id, usuario=request.user)
+            archivo.delete()
+            return JsonResponse({'status': 'success', 'message': 'Archivo eliminado correctamente.'})
+        except Archivo.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'El archivo no existe.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
+
+@csrf_exempt
+def compartir_recurso(request, tipo, recurso_id):
     if request.method == 'POST':
         try:
-            evento = get_object_or_404(Evento, id=evento_id, creador=request.user)
+            # Parsear los datos enviados en la solicitud
             data = json.loads(request.body)
+            usuarios_ids = data.get('usuarios', [])
 
-            evento.titulo = data.get('titulo', evento.titulo)
-            evento.descripcion = data.get('descripcion', evento.descripcion)
-            evento.fecha = data.get('fecha', evento.fecha)
+            if not usuarios_ids:
+                return JsonResponse({'status': 'error', 'message': 'No se han seleccionado usuarios para compartir.'}, status=400)
 
-            compartido_ids = data.get('compartido_con', [])
-            if compartido_ids:
-                usuarios = Usuarios.objects.filter(id_usuario__in=compartido_ids)
-                evento.compartido_con.set(usuarios)
+            usuarios = Usuarios.objects.filter(id_usuario__in=usuarios_ids)
 
-            evento.save()
+            if tipo == 'archivo':
+                recurso = get_object_or_404(Archivo, id=recurso_id)
+                recurso.compartido_con.add(*usuarios)
+            elif tipo == 'carpeta':
+                recurso = get_object_or_404(Carpeta, id=recurso_id)
+                recurso.compartido_con.add(*usuarios)
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Tipo de recurso no válido.'}, status=400)
 
-            return JsonResponse({'status': 'success', 'message': 'Evento editado correctamente.'})
+            return JsonResponse({'status': 'success', 'message': f'{tipo.capitalize()} compartido correctamente.'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
+
+@csrf_exempt
+@login_required
+def crear_subcarpeta(request, carpeta_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            nombre = data.get('nombre')
+
+            if not nombre:
+                return JsonResponse({'status': 'error', 'message': 'Debe proporcionar un nombre para la subcarpeta.'}, status=400)
+
+            # Obtener la carpeta padre donde se va a crear la subcarpeta
+            carpeta_padre = get_object_or_404(Carpeta, id=carpeta_id)
+
+            # Crear la subcarpeta y asignar el usuario autenticado
+            nueva_carpeta = Carpeta.objects.create(
+                nombre=nombre,
+                usuario=request.user,  # Establecer el usuario autenticado como creador
+                carpeta_padre=carpeta_padre  # Definir la carpeta padre
+            )
+
+            return JsonResponse({'status': 'success', 'message': 'Subcarpeta creada correctamente.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
+
+
+@csrf_exempt
+@login_required
+def ver_compartidos(request):
+    usuario_actual = request.user
+
+    # Obtener todas las carpetas compartidas con el usuario actual
+    carpetas_compartidas = Carpeta.objects.filter(compartido_con=usuario_actual).select_related('usuario')
+
+    # Obtener todos los archivos compartidos con el usuario actual
+    archivos_compartidos = Archivo.objects.filter(compartido_con=usuario_actual).select_related('usuario')
+
+    context = {
+        'carpetas_compartidas': carpetas_compartidas,
+        'archivos_compartidos': archivos_compartidos
+    }
+
+    return render(request, 'app/ver_compartidos.html', context)

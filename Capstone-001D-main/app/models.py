@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils.timezone import now
 from datetime import time
+from django.conf import settings
+from django.contrib.auth import get_user_model
 
 class UsuarioManager(BaseUserManager):
     def create_user(self, run, nombre, apellido, password=None, **extra_fields):
@@ -93,3 +95,42 @@ class Evento(models.Model):
 
     def __str__(self):
         return f"{self.titulo} - {self.fecha}"
+    
+class Anuncio(models.Model):
+    GRUPO_CHOICES = [
+        ('Todos', 'Todos'),
+        ('Directivos', 'Directivos'),
+        ('Profesores', 'Profesores'),
+        ('Asistentes', 'Asistentes'),
+    ]
+    
+    titulo = models.CharField(max_length=255)
+    descripcion = models.TextField()
+    autor = models.ForeignKey(Usuarios, on_delete=models.CASCADE)
+    grupo_destinatario = models.CharField(max_length=20, choices=GRUPO_CHOICES)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.titulo
+    
+User = get_user_model()
+
+class Carpeta(models.Model):
+    nombre = models.CharField(max_length=255)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)  # Usuario que creó la carpeta
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    compartido_con = models.ManyToManyField(User, related_name='carpetas_compartidas', blank=True)
+    carpeta_padre = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='subcarpetas')
+
+    def __str__(self):
+        return self.nombre
+    
+
+class Archivo(models.Model):
+    nombre = models.CharField(max_length=255)
+    archivo = models.FileField(upload_to='archivos/')
+    tamano = models.FloatField(default=0)  # Tamaño en KB con valor predeterminado
+    fecha_subida = models.DateTimeField(auto_now_add=True)
+    usuario = models.ForeignKey(Usuarios, on_delete=models.CASCADE)  # Usuario que subió el archivo
+    carpeta = models.ForeignKey(Carpeta, on_delete=models.CASCADE, related_name='archivos', null=True, blank=True)
+    compartido_con = models.ManyToManyField(Usuarios, related_name='archivos_compartidos', blank=True)  # Añadido

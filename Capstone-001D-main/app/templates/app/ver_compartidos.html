@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Compartidos Conmigo{% endblock %}
+
+{% block content %}
+<div class="contenedor-principal min-h-screen bg-gradient-to-b from-blue-100 to-blue-200 p-8">
+    <div class="container mx-auto">
+        <!-- Título -->
+        <div class="titulo-contenedor flex justify-center mb-8">
+            <h1 class="text-4xl font-semibold text-center">Compartidos Conmigo</h1>
+        </div>
+
+        <!-- Sección de carpetas compartidas -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Carpetas Compartidas</h2>
+            <div class="carpetas-contenedor grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {% for carpeta in carpetas_compartidas %}
+                <div class="carpeta bg-white p-3 rounded-lg shadow-md flex items-center justify-between transition-transform transform hover:scale-105 hover:bg-blue-50 max-w-xs">
+                    <a href="{% url 'ver_carpeta' carpeta.id %}" class="font-semibold text-md text-gray-800 cursor-pointer flex-1">
+                        {{ carpeta.nombre }}
+                    </a>
+                    <div class="text-sm text-gray-600">
+                        <span>Compartido por: {{ carpeta.usuario.username }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+                {% if carpetas_compartidas|length == 0 %}
+                <p class="text-gray-700">No hay carpetas compartidas.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sección de archivos compartidos -->
+        <div class="tabla-archivos-contenedor bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold mb-4">Archivos Compartidos</h2>
+            <table class="tabla-archivos min-w-full">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-4 px-6 text-left text-sm font-semibold text-gray-600">Nombre Archivo</th>
+                        <th class="py-4 px-6 text-left text-sm font-semibold text-gray-600">Fecha</th>
+                        <th class="py-4 px-6 text-left text-sm font-semibold text-gray-600">Tamaño</th>
+                        <th class="py-4 px-6 text-left text-sm font-semibold text-gray-600">Compartido Por</th>
+                        <th class="py-4 px-6 text-left text-sm font-semibold text-gray-600">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if archivos_compartidos %}
+                    {% for archivo in archivos_compartidos %}
+                    <tr class="border-t">
+                        <td class="py-4 px-6 text-gray-700">{{ archivo.nombre }}</td>
+                        <td class="py-4 px-6 text-gray-700">{{ archivo.fecha_subida }}</td>
+                        <td class="py-4 px-6 text-gray-700">{{ archivo.tamano }} KB</td>
+                        <td class="py-4 px-6 text-gray-700">{{ archivo.usuario.username }}</td>
+                        <td class="py-4 px-6 flex space-x-4">
+                            <!-- Botón para descargar -->
+                            <a href="{{ archivo.archivo.url }}" download class="descargar-archivo text-blue-500 hover:text-blue-700 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m0 0l-6-6m6 6l6-6" />
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="py-4 px-6 text-center text-gray-700">No hay archivos compartidos disponibles.</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

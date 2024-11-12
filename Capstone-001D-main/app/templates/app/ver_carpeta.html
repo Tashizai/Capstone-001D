@@ -1,0 +1,367 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ carpeta.nombre }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
+
+<div class="contenedor-principal min-h-screen bg-gradient-to-b from-blue-100 to-blue-200 p-8">
+    <div class="container mx-auto">
+        <!-- Título y botón para volver -->
+        <div class="titulo-contenedor flex justify-between items-center mb-6">
+            <h1 class="text-4xl font-semibold">{{ carpeta.nombre }}</h1>
+            <a href="{% url 'vista_archivos' %}"
+                class="bg-blue-500 text-white px-4 py-3 rounded-lg hover:bg-blue-600">Volver a Archivos</a>
+        </div>
+
+        <div class="contenido flex flex-col md:flex-row justify-between items-start">
+            <!-- Botones a la izquierda -->
+            <div class="botones-contenedor flex flex-col space-y-6 items-center justify-center mt-4 mb-16 md:mb-0">
+                {% if request.user == carpeta.usuario %}
+                    <!-- Solo el propietario puede ver estos botones -->
+                    <button id="subirArchivoDirecto"
+                            class="boton bg-green-600 text-white w-48 px-4 py-3 rounded-lg shadow-lg transition-transform transform hover:scale-105 hover:bg-green-700">
+                        Subir archivo
+                    </button>
+                    <button id="crearCarpetaBtn"
+                            class="boton bg-yellow-500 text-white w-48 px-4 py-3 rounded-lg shadow-lg transition-transform transform hover:scale-105 hover:bg-yellow-600">
+                        Crear subcarpeta
+                    </button>
+                {% endif %}
+            </div>>
+
+            <!-- Sección de carpetas y archivos -->
+            <div class="contenido-contenedor flex-1 mt-4 ml-separacion-contenido">
+                <!-- Subcarpetas -->
+                <div
+                    class="carpetas-contenedor grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+                    {% for subcarpeta in subcarpetas %}
+                    <div
+                        class="carpeta bg-white p-3 rounded-lg shadow-md flex items-center justify-between transition-transform transform hover:scale-105 hover:bg-blue-50 max-w-xs">
+                        <a href="{% url 'ver_carpeta' subcarpeta.id %}"
+                            class="font-semibold text-md text-gray-800 cursor-pointer flex-1">
+                            {{ subcarpeta.nombre }}
+                        </a>
+                        <div class="acciones">
+                            <button class="compartir-carpeta text-blue-500 hover:text-blue-700 transition"
+                                data-id="{{ subcarpeta.id }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 8h2a2 2 0 011 3.74V12a2 2 0 11-4 0V8a2 2 0 013.74-1H17z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Tabla de archivos -->
+                <div class="tabla-archivos-contenedor bg-white p-6 rounded-lg shadow-md">
+                    <table class="tabla-archivos min-w-full">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="py-4 px-6 text-left text-sm font-semibold text-gray-600">Nombre Archivo</th>
+                                <th class="py-4 px-6 text-left text-sm font-semibold text-gray-600">Fecha</th>
+                                <th class="py-4 px-6 text-left text-sm font-semibold text-gray-600">Tamaño</th>
+                                <th class="py-4 px-6 text-left text-sm font-semibold text-gray-600">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if archivos %}
+                            {% for archivo in archivos %}
+                            <tr class="border-t">
+                                <td class="py-4 px-6 text-gray-700">{{ archivo.nombre }}</td>
+                                <td class="py-4 px-6 text-gray-700">{{ archivo.fecha }}</td>
+                                <td class="py-4 px-6 text-gray-700">{{ archivo.tamano }} KB</td>
+                                <td class="py-4 px-6 flex space-x-4">
+                                    <!-- Botón para descargar -->
+                                    <button class="descargar-archivo text-blue-500 hover:text-blue-700 transition"
+                                        data-url="{{ archivo.archivo.url }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 4v16m0 0l-6-6m6 6l6-6" />
+                                        </svg>
+                                    </button>
+                                    <!-- Botón para eliminar -->
+                                    <button class="eliminar-archivo text-red-500 hover:text-red-700 transition"
+                                        data-id="{{ archivo.id }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                    <!-- Botón para compartir -->
+                                    <button class="compartir-archivo text-green-500 hover:text-green-700 transition"
+                                        data-id="{{ archivo.id }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17 8h2a2 2 0 011 3.74V12a2 2 0 11-4 0V8a2 2 0 013.74-1H17z" />
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="py-4 px-6 text-center text-gray-700">No hay archivos disponibles.
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal para crear carpeta -->
+    <div id="crearSubcarpetaModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-1/3 mx-auto my-auto text-gray-800">
+            <h2 class="text-2xl font-semibold mb-4 text-blue-600">Crear Subcarpeta</h2>
+            <form id="crearSubcarpetaForm">
+                {% csrf_token %}
+                <input type="text" id="nombreSubcarpetaInput" class="w-full p-4 border mb-6 rounded-lg text-gray-700"
+                    placeholder="Nombre de la subcarpeta" />
+                <div class="flex justify-end space-x-4">
+                    <button type="button" id="cerrarSubcarpetaModal"
+                        class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600">Cancelar</button>
+                    <button type="button" id="guardarSubcarpetaBtn"
+                        class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para compartir archivo o carpeta -->
+    <div id="compartirModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-1/3 mx-auto my-auto text-gray-800">
+            <h2 class="text-2xl font-semibold mb-4 text-blue-600">Compartir Archivo o Carpeta</h2>
+            <form id="compartirForm">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label for="usuariosCompartir" class="block font-semibold mb-2 text-lg text-gray-800">Seleccionar
+                        usuarios:</label>
+                    <select id="usuariosCompartir" name="usuarios"
+                        class="w-full p-4 border rounded-lg text-gray-700" multiple>
+                        {% for usuario in usuarios %}
+                        <option value="{{ usuario.id_usuario }}">{{ usuario.nombre }} {{ usuario.apellido }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <input type="hidden" id="recursoCompartirId">
+                <input type="hidden" id="tipoRecursoCompartir">
+                <div class="flex justify-end space-x-4">
+                    <button type="button" id="cancelarCompartir"
+                        class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600">Cancelar</button>
+                    <button type="submit"
+                        class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">Compartir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para eliminar archivo -->
+    <div id="eliminarModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-1/3 mx-auto my-auto">
+            <h2 class="text-2xl font-semibold mb-4 text-red-600">Eliminar Archivo</h2>
+            <p class="mb-6">¿Estás seguro de que deseas eliminar este archivo?</p>
+            <div class="flex justify-end space-x-4">
+                <button type="button" id="cancelarEliminar"
+                    class="cancelar-eliminar bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600">Cancelar</button>
+                <button type="button" id="confirmarEliminar"
+                    class="confirmar-eliminar bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // Elementos de los modales
+        const crearSubcarpetaModal = document.getElementById('crearSubcarpetaModal');
+        const compartirModal = document.getElementById('compartirModal');
+        const eliminarModal = document.getElementById('eliminarModal');
+
+        // Botones
+        const crearSubcarpetaBtn = document.getElementById('crearCarpetaBtn');
+        const cerrarSubcarpetaModalBtn = document.getElementById('cerrarSubcarpetaModal');
+        const guardarSubcarpetaBtn = document.getElementById('guardarSubcarpetaBtn');
+        const subirArchivoDirectoBtn = document.getElementById('subirArchivoDirecto');
+        const uploadFileInput = document.createElement('input');
+        uploadFileInput.type = 'file';
+
+        // Abrir modal para crear subcarpeta
+        if (crearSubcarpetaBtn) {
+            crearSubcarpetaBtn.addEventListener('click', function () {
+                crearSubcarpetaModal.classList.remove('hidden');
+                crearSubcarpetaModal.classList.add('flex');
+            });
+        }
+
+        // Cerrar modal de crear subcarpeta
+        if (cerrarSubcarpetaModalBtn) {
+            cerrarSubcarpetaModalBtn.addEventListener('click', function () {
+                crearSubcarpetaModal.classList.add('hidden');
+                crearSubcarpetaModal.classList.remove('flex');
+                document.getElementById('nombreSubcarpetaInput').value = '';
+            });
+        }
+
+        // Guardar subcarpeta
+        if (guardarSubcarpetaBtn) {
+            guardarSubcarpetaBtn.addEventListener('click', function () {
+                const nombreSubcarpeta = document.getElementById('nombreSubcarpetaInput').value.trim();
+                const carpetaId = "{{ carpeta.id }}"; // Obtener el ID de la carpeta actual
+
+                if (nombreSubcarpeta) {
+                    fetch(`/crear_subcarpeta/${carpetaId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken,
+                        },
+                        body: JSON.stringify({ nombre: nombreSubcarpeta }),
+                    })
+                    .then(response => response.ok ? response.json() : Promise.reject(response))
+                    .then(data => {
+                        if (data.status === 'success') {
+                            window.location.reload();
+                        } else {
+                            alert('Error al crear la subcarpeta: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Ocurrió un error inesperado al crear la subcarpeta.');
+                    });
+                } else {
+                    alert('Por favor, ingrese un nombre para la subcarpeta.');
+                }
+            });
+        }
+
+        // Subir archivo
+        if (subirArchivoDirectoBtn) {
+            subirArchivoDirectoBtn.addEventListener('click', function () {
+                uploadFileInput.click();
+            });
+        }
+
+        uploadFileInput.addEventListener('change', function (event) {
+            if (event.target.files.length > 0) {
+                const formData = new FormData();
+                formData.append('archivo', event.target.files[0]);
+                const carpetaId = "{{ carpeta.id }}";
+
+                fetch(carpetaId ? `/archivos/subir/${carpetaId}/` : `/archivos/subir/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: formData,
+                })
+                .then(response => response.ok ? response.json() : Promise.reject(response))
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Archivo subido exitosamente.');
+                        window.location.reload();
+                    } else {
+                        alert('Error al subir el archivo: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Ocurrió un error inesperado al subir el archivo.');
+                });
+            }
+        });
+
+        // Compartir recurso (archivo o carpeta)
+        document.querySelectorAll('.compartir-archivo, .compartir-carpeta').forEach(button => {
+            button.addEventListener('click', function () {
+                const recursoId = this.dataset.id;
+                const tipo = this.classList.contains('compartir-archivo') ? 'archivo' : 'carpeta';
+                document.getElementById('recursoCompartirId').value = recursoId;
+                document.getElementById('tipoRecursoCompartir').value = tipo;
+                compartirModal.classList.remove('hidden');
+                compartirModal.classList.add('flex');
+            });
+        });
+
+        document.getElementById('cancelarCompartir').addEventListener('click', function () {
+            compartirModal.classList.add('hidden');
+            compartirModal.classList.remove('flex');
+        });
+
+        document.getElementById('compartirForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const usuarios = Array.from(document.getElementById('usuariosCompartir').selectedOptions).map(option => option.value);
+            const recursoId = document.getElementById('recursoCompartirId').value;
+            const tipo = document.getElementById('tipoRecursoCompartir').value;
+
+            fetch(`/compartir/${tipo}/${recursoId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({ usuarios: usuarios }),
+            })
+            .then(response => response.ok ? response.json() : Promise.reject(response))
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.reload();
+                } else {
+                    alert('Error al compartir el recurso: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ocurrió un error inesperado al compartir el recurso.');
+            });
+        });
+
+        // Eliminar archivo
+        document.querySelectorAll('.eliminar-archivo').forEach(button => {
+            button.addEventListener('click', function () {
+                const archivoId = this.dataset.id;
+                eliminarModal.classList.remove('hidden');
+                eliminarModal.classList.add('flex');
+                document.getElementById('confirmarEliminar').onclick = function () {
+                    fetch(`/archivos/eliminar/${archivoId}/`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                        },
+                    })
+                    .then(response => response.ok ? response.json() : Promise.reject(response))
+                    .then(data => {
+                        if (data.status === 'success') {
+                            window.location.reload();
+                        } else {
+                            alert('Error al eliminar el archivo: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Ocurrió un error inesperado al eliminar el archivo.');
+                    });
+                };
+            });
+        });
+
+        document.getElementById('cancelarEliminar').addEventListener('click', function () {
+            eliminarModal.classList.add('hidden');
+            eliminarModal.classList.remove('flex');
+        });
+    });
+</script>
+
+{% endblock %}

@@ -13,24 +13,64 @@
 </head>
 <body class="bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 min-h-screen flex flex-col">
 
-    <!-- Barra de navegación superior -->
-    <nav class="bg-gradient-to-r from-blue-600 to-cyan-500 shadow-lg p-4 text-white">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="{% url 'home' %}" class="text-xl font-bold">Liceo San Pedro</a>
-            <ul class="flex space-x-6">
-                <li><a href="#" class="hover:underline">Calendario</a></li>
-                <li><a href="#" class="hover:underline">Horario</a></li>
-                <li><a href="#" class="hover:underline">Anuncios</a></li>
-                <li><a href="#" class="hover:underline">Archivos</a></li>
-                <li><a href="#" class="hover:underline">Compartidos</a></li>
-                <li><a href="#" class="hover:underline">LSPcam</a></li>
-                <li><a href="{% url 'logout' %}" class="hover:underline">Cerrar Sesión</a></li>
-            </ul>
-        </div>
+    <!-- Navbar con Funciones Exclusivas para Administradores -->
+    <nav class="bg-blue-800 text-white py-4 px-8 flex justify-between items-center">
+        <div class="text-2xl font-semibold">Liceo San Pedro</div>
+        <button id="navbar-toggle" class="md:hidden focus:outline-none focus:ring-2 focus:ring-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+        </button>
+        <ul id="navbar-menu" class="hidden md:flex md:space-x-6 items-center flex-col md:flex-row w-full md:w-auto mt-4 md:mt-0">
+            <li class="md:mr-4"><a href="{% url 'calendario' %}" class="hover:text-gray-300 transition block py-2 md:py-0">Calendario</a></li>
+            <li class="md:mr-4"><a href="{% url 'ver_horario' usuario_id=request.user.id_usuario %}" class="hover:text-gray-300 transition block py-2 md:py-0">Horario</a></li>
+            <li class="md:mr-4"><a href="{% url 'lista_anuncios' %}" class="hover:text-gray-300 transition block py-2 md:py-0">Anuncios</a></li>
+            <li class="md:mr-4"><a href="{% url 'vista_archivos' %}" class="hover:text-gray-300 transition block py-2 md:py-0">Archivos</a></li>
+            {% if user.is_staff %}
+            <li class="relative group md:mr-4">
+                <a href="#" class="hover:text-gray-300 transition block py-2 md:py-0">Funciones</a>
+                <ul class="hidden md:group-hover:block group-focus:block w-full md:w-48 bg-white text-gray-800 rounded-lg shadow-lg p-4 space-y-2 md:absolute md:top-full md:left-0 md:mt-2">
+                    <li><button id="abrir-modal" class="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold py-2 rounded-lg transition-transform transform hover:scale-105">Añadir Usuario</button></li>
+                    <li><button class="w-full bg-gradient-to-r from-purple-400 to-pink-500 text-white font-semibold py-2 rounded-lg transition-transform transform hover:scale-105">Añadir Anuncio</button></li>
+                    <li><button class="w-full bg-gradient-to-r from-orange-400 to-red-500 text-white font-semibold py-2 rounded-lg transition-transform transform hover:scale-105">Crear Sala de Videollamada</button></li>
+                </ul>
+            </li>
+            {% endif %}
+            <li class="md:mr-4"><a href="{% url 'logout' %}" class="hover:text-gray-300 transition block py-2 md:py-0">Cerrar Sesión</a></li>
+        </ul>
     </nav>
 
+    <!-- Menú lateral responsive -->
+    <div id="side-menu" class="fixed inset-y-0 left-0 w-64 bg-blue-800 text-white transform -translate-x-full transition-transform duration-300 ease-in-out z-50">
+        <div class="flex justify-between items-center p-4">
+            <div class="text-2xl font-semibold">Liceo San Pedro</div>
+            <button id="close-menu" class="focus:outline-none focus:ring-2 focus:ring-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <ul class="flex flex-col space-y-4 p-4">
+            <li><a href="{% url 'calendario' %}" class="hover:text-gray-300 transition block py-2">Calendario</a></li>
+            <li><a href="{% url 'ver_horario' usuario_id=request.user.id_usuario %}" class="hover:text-gray-300 transition block py-2">Horario</a></li>
+            <li><a href="{% url 'lista_anuncios' %}" class="hover:text-gray-300 transition block py-2">Anuncios</a></li>
+            <li class="md:mr-4"><a href="{% url 'vista_archivos' %}" class="hover:text-gray-300 transition block py-2 md:py-0">Archivos</a></li>
+            {% if user.is_staff %}
+            <li class="relative">
+                <button id="funciones-toggle" class="hover:text-gray-300 transition block py-2 w-full text-left focus:outline-none">Funciones</button>
+                <ul id="funciones-menu" class="hidden flex-col space-y-2 pl-4">
+                    <li><button id="abrir-modal" class="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold py-2 rounded-lg transition-transform transform hover:scale-105">Añadir Usuario</button></li>
+                    <li><button class="w-full bg-gradient-to-r from-purple-400 to-pink-500 text-white font-semibold py-2 rounded-lg transition-transform transform hover:scale-105">Añadir Anuncio</button></li>
+                    <li><button class="w-full bg-gradient-to-r from-orange-400 to-red-500 text-white font-semibold py-2 rounded-lg transition-transform transform hover:scale-105">Crear Sala de Videollamada</button></li>
+                </ul>
+            </li>
+            {% endif %}
+            <li><a href="{% url 'logout' %}" class="hover:text-gray-300 transition block py-2">Cerrar Sesión</a></li>
+        </ul>
+    </div>
+
     <!-- Contenido principal -->
-    <main class="flex-grow container mx-auto py-8">
+    <main class="flex-grow container mx-auto py-8 px-4 md:px-8">
         {% block content %}{% endblock %}
     </main>
 
@@ -40,5 +80,34 @@
     </footer>
 
     {% block extra_js %}{% endblock %}
+
+    <!-- Script para el menú responsive -->
+    <script>
+        const navbarToggle = document.getElementById('navbar-toggle');
+        const sideMenu = document.getElementById('side-menu');
+        const closeMenuButton = document.getElementById('close-menu');
+        const funcionesToggle = document.getElementById('funciones-toggle');
+        const funcionesMenu = document.getElementById('funciones-menu');
+
+        // Abrir y cerrar menú lateral
+        navbarToggle.addEventListener('click', function () {
+            sideMenu.classList.remove('-translate-x-full');
+        });
+
+        closeMenuButton.addEventListener('click', function () {
+            sideMenu.classList.add('-translate-x-full');
+        });
+
+        // Mostrar y ocultar el submenú de "Funciones"
+        funcionesToggle?.addEventListener('click', function () {
+            funcionesMenu.classList.toggle('hidden');
+        });
+
+        // Mostrar u ocultar el menú en vista escritorio
+        document.getElementById('navbar-toggle').addEventListener('click', function () {
+            const menu = document.getElementById('navbar-menu');
+            menu.classList.toggle('hidden');
+        });
+    </script>
 </body>
 </html>
