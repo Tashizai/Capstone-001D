@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intranet LMS</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container-table {
+            margin: 20px auto;  /* Centra horizontalmente */
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+            /* Ajuste del tamaño */
+            width: 85%;   /* Aumenta el ancho al 85% */
+            height: 75vh; /* Ocupa el 75% de la altura del viewport */
+            overflow-y: auto; /* Scroll vertical si es necesario */
+        }
+
+        table thead {
+            background-color: #343a40;
+            color: white;
+        }
+
+        .icon-actions i {
+            margin: 0 5px;
+            cursor: pointer;
+        }
+
+        .icon-actions i:hover {
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de Navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Intranet LMS</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link" href="#">Calendario</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Horario</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Anuncios</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Archivos</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Compartidos</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">LSPCam</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Cerrar Sesión</a></li>
+            </ul>
+        </div>
+    </nav>
+    <!-- Contenedor de la Tabla -->
+    <div class="container-table">
+        <h3 class="mb-4">Compartido conmigo</h3>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Nombre Archivo</th>
+                    <th>Compartido por</th>
+                    <th>Fecha</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Ejemplo de filas de archivos -->
+                <tr>
+                    <td>CualquierArchivodeejemplo.docx</td>
+                    <td>Carlos Moya</td>
+                    <td>25 Sep 2024</td>
+                    <td class="icon-actions">
+                        <i class="fas fa-download"></i>
+                    </td>
+                </tr>
+                <tr>
+                    <td>CualquierArchivodeejemplo.docx</td>
+                    <td>Carlos Moya</td>
+                    <td>25 Sep 2024</td>
+                    <td class="icon-actions">
+                        <i class="fas fa-download"></i>
+                    </td>
+                </tr>
+                <tr>
+                    <td>CualquierArchivodeejemplo.docx</td>
+                    <td>Carlos Moya</td>
+                    <td>25 Sep 2024</td>
+                    <td class="icon-actions">
+                        <i class="fas fa-download"></i>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+</body>
+</html>
+
+

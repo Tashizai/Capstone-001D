@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario - Intranet LMS</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <style>
+        .fc-daygrid-day {
+            position: relative;
+            height: 100px;
+            border: 1px solid #ddd;
+        }
+
+        .fc-daygrid-day-number {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .add-event-button {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background-color: #e0e0e0;
+            border: none;
+            border-radius: 50%;
+            color: black;
+            width: 25px;
+            height: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .add-event-button:hover {
+            background-color: #c0c0c0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Intranet LMS</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link" href="#">Calendario</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Horario</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Anuncios</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Archivos</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Compartidos</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">LSPCam</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Cerrar Sesión</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div id="calendar"></div>
+    </div>
+
+    <!-- Modal para añadir evento -->
+    <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="eventModalLabel">Añadir Evento</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="eventForm">
+                        <div class="form-group">
+                            <label for="eventTitle">Título</label>
+                            <input type="text" class="form-control" id="eventTitle" placeholder="Título del evento" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="eventDescription">Descripción</label>
+                            <textarea class="form-control" id="eventDescription" rows="3" placeholder="Descripción del evento"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="eventGuests">Invitados</label>
+                            <select class="form-control" id="eventGuests">
+                                <option>*Todos</option>
+                                <option>*Correo</option>
+                            </select>
+                        </div>
+                        <input type="hidden" id="eventDate">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="saveEvent">Agregar Evento</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var selectedDate = '';
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'es',
+                showNonCurrentDates: false,
+                fixedWeekCount: false,
+                headerToolbar: {
+                    left: 'prev,next',
+                    center: 'title',
+                    right: ''
+                },
+                dayCellDidMount: function(info) {
+                    var addButton = document.createElement('button');
+                    addButton.classList.add('add-event-button');
+                    addButton.innerHTML = '+';
+
+                    addButton.addEventListener('click', function() {
+                        selectedDate = info.dateStr;
+                        document.getElementById('eventDate').value = selectedDate;
+                        $('#eventModal').modal('show');
+                    });
+
+                    info.el.appendChild(addButton);
+                }
+            });
+
+            document.getElementById('saveEvent').addEventListener('click', function() {
+                var title = document.getElementById('eventTitle').value;
+                var description = document.getElementById('eventDescription').value;
+                var guests = document.getElementById('eventGuests').value;
+
+                if (title) {
+                    calendar.addEvent({
+                        title: title + ' (' + guests + ')',
+                        start: selectedDate,
+                        description: description,
+                        allDay: true
+                    });
+
+                    $('#eventModal').modal('hide');
+                    document.getElementById('eventForm').reset();
+                } else {
+                    alert('El título es obligatorio.');
+                }
+            });
+
+            calendar.render();
+        });
+    </script>
+</body>
+</html>

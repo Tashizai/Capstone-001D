@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Videollamada - Intranet LSPcam</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Encabezado */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #343a40;
+            color: white;
+            padding: 10px;
+        }
+
+        header .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        header .user-info img {
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 15px;
+        }
+
+        nav ul li {
+            display: inline;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .video-call-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            height: calc(100vh - 100px); /* Ajusta la altura para ocupar toda la pantalla menos el encabezado */
+        }
+
+        .video-section {
+            background-color: #333;
+            border-radius: 8px;
+            position: relative;
+            height: 100%; /* Extiende la altura al 100% de su contenedor */
+        }
+
+        .video-section video {
+            width: 100%;
+            height: 80%; /* Ajusta la altura del video dentro de la sección */
+            border-radius: 8px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 10px;
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+        }
+
+        .control-button {
+            background-color: #343a40;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .chat-section {
+            background-color: #ffffff;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            height: 100%; /* Extiende la altura al 100% de su contenedor */
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            max-height: 80%; /* Ajusta la altura del área de mensajes */
+        }
+
+        .chat-message {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .chat-message img {
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .chat-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .chat-input input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .chat-input button {
+            background-color: #343a40;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        /* Barra de iconos en la parte inferior del chat */
+        .chat-footer {
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            border-top: 1px solid #ddd;
+        }
+
+        .chat-footer i {
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Encabezado con información de usuario y menú de navegación -->
+    <header>
+        <div class="user-info">
+            <img src="https://via.placeholder.com/50" alt="Avatar">
+            <p>Bienvenido <b>USER</b> @admin</p>
+        </div>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'calendario' %}">Calendario</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Horario</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'anuncios' %}">Anuncios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'archivos' %}">Archivos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Compartidos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">LSPCam</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">Cerrar Sesión</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Módulo de Videollamada y Chat -->
+    <div class="video-call-container">
+        <div class="video-section">
+            <video id="screen-video" autoplay></video>
+            <div class="controls">
+                <button class="control-button"><i class="fas fa-phone-slash"></i></button>
+                <button class="control-button"><i class="fas fa-microphone-slash"></i></button>
+                <button class="control-button" id="toggle-camera-btn"><i class="fas fa-video-slash"></i></button>
+            </div>
+        </div>
+        <div class="chat-section">
+            <div class="chat-messages">
+                <div class="chat-message">
+                    <img src="https://via.placeholder.com/30" alt="User">
+                    <p>texto ejemplo</p>
+                </div>
+                <div class="chat-message">
+                    <img src="https://via.placeholder.com/30" alt="User">
+                    <p>texto ejemplo</p>
+                </div>
+            </div>    
+            <div class="chat-input">
+                <input type="text" placeholder="Mensaje">
+                <button><i class="fas fa-paper-plane"></i></button>
+            </div>
+            <div class="chat-footer">
+                <i class="fas fa-comment-dots"></i>
+                <i class="fas fa-share-square" id="share-screen-btn"></i>
+                <i class="fas fa-users"></i>
+                <i class="fas fa-cog"></i>
+            </div>          
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Función para compartir pantalla
+        document.getElementById('share-screen-btn').addEventListener('click', async () => {
+            try {
+                // Solicitar la captura de pantalla
+                const screenStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: true
+                });
+    
+                // Obtener el elemento de video dentro del contenedor .video-call-container
+                const videoElement = document.querySelector('.video-call-container video');
+                videoElement.srcObject = screenStream;
+    
+                // Manejo de finalización de pantalla compartida
+                screenStream.getVideoTracks()[0].addEventListener('ended', () => {
+                    videoElement.srcObject = null; // Limpiar el stream del video al finalizar la compartición
+                });
+            } catch (error) {
+                console.error("Error al compartir pantalla:", error);
+            }
+        });
+
+        let cameraStream = null;
+        const videoElement = document.getElementById('screen-video');
+        const cameraButton = document.getElementById('toggle-camera-btn');
+        let isCameraOn = false;
+
+    cameraButton.addEventListener('click', async () => {
+        if (!isCameraOn) {
+            // Si la cámara está apagada, intenta activarla
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                videoElement.srcObject = cameraStream;
+                isCameraOn = true;
+                cameraButton.querySelector('i').classList.replace('fa-video-slash', 'fa-video'); // Cambia el icono
+            } catch (error) {
+                console.error("Error al activar la cámara:", error);
+            }
+        } else {
+            // Si la cámara está encendida, detén el stream
+            cameraStream.getTracks().forEach(track => track.stop());
+            videoElement.srcObject = null;
+            isCameraOn = false;
+            cameraButton.querySelector('i').classList.replace('fa-video', 'fa-video-slash'); // Cambia el icono
+        }
+    });
+    </script>
+</body>
+</html>

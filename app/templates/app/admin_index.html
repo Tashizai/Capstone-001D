@@ -1,0 +1,147 @@
+<!-- templates/admin_index.html -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Intranet LMS</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Intranet LMS</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'calendario' %}">Calendario</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Horario</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'anuncios' %}">Anuncios</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'archivos' %}">Archivos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Compartidos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">LSPCam</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'logout' %}">Cerrar Sesión</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container mt-5">
+        <div class="row">
+            <!-- Sección de funcionalidades del administrador -->
+            <div class="col-md-8">
+                <h1 class="text-center">Bienvenido {{ user.nombre }} @admin</h1>
+
+                <!-- Botón para añadir usuario que abre el modal -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <button class="btn btn-primary btn-block" data-toggle="modal" data-target="#addUserModal">+ Añadir Usuario</button>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-secondary btn-block">Función 1</button>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <button class="btn btn-secondary btn-block">Función 1</button>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-secondary btn-block">Función 1</button>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <button class="btn btn-secondary btn-block">Función 1</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de lista de profesores -->
+            <div class="col-md-3 offset-md-1">
+                <h5>Lista de Profesores</h5>
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Buscar Profesor">
+                </div>
+                <ul class="list-group">
+                    <li class="list-group-item">Profesor 1</li>
+                    <li class="list-group-item">Profesor 2</li>
+                    <li class="list-group-item">Profesor 3</li>
+                    <li class="list-group-item">Profesor 4</li>
+                    <li class="list-group-item">Profesor 5</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para añadir usuario -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">Añadir Usuario</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="nombre">Nombre</label>
+                            <input type="text" class="form-control" id="nombre" placeholder="Nombre">
+                        </div>
+                        <div class="form-group">
+                            <label for="apellido">Apellido</label>
+                            <input type="text" class="form-control" id="apellido" placeholder="Apellido">
+                        </div>
+                        <div class="form-group">
+                            <label for="rol">Rol</label>
+                            <select class="form-control" id="rol">
+                                <option>Directiva</option>
+                                <option>Profesor</option>
+                                <option>Asistente</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="usuario">Usuario (Rut sin guion)</label>
+                            <input type="text" class="form-control" id="usuario" placeholder="RUT sin guion">
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Contraseña (por defecto: 123456)</label>
+                            <input type="password" class="form-control" id="password" placeholder="Contraseña">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

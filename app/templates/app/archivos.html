@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Archivos - Intranet LMS</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar {
+            height: 100vh;
+            background-color: #343a40;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .user-info img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .container-files {
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            background-color: white;
+        }
+
+        .folder {
+            width: 120px;
+            height: 80px;
+            border: 2px solid #343a40;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            margin: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .folder:hover {
+            background-color: #e0e0e0;
+        }
+
+        .table thead {
+            background-color: #343a40;
+            color: white;
+        }
+
+        .icon-actions i {
+            margin: 0 5px;
+            cursor: pointer;
+        }
+
+        .icon-actions i:hover {
+            color: #007bff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar {
+            height: 100vh;
+            background-color: #343a40;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: start;
+            gap: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+        }
+
+        img {
+            border-radius: 50%;
+        }
+
+        .container-fluid {
+            padding: 0;
+        }
+
+        .navbar {
+            margin-bottom: 0;
+        }
+
+        .module-options {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            margin-top: 5px;
+            background-color: white;
+            border: 1px solid #343a40;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .module-options a {
+            padding: 10px;
+            text-decoration: none;
+            color: black;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .module-options a:last-child {
+            border-bottom: none;
+        }
+
+        .module-options a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .btn-light {
+            border: 1px solid black;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 250px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 1050;
+        }
+
+        .modal-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+
+        #usuariosAcceso {
+            margin-top: 10px;
+        }
+
+        .persona-acceso {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .persona-acceso img {
+            border-radius: 50%;
+        }
+
+        .modal-compartir {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            z-index: 1050;
+            padding: 20px;
+        }
+
+        .modal-header-compartir {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+
+        .modal-header-compartir h4 {
+            margin: 0;
+        }
+
+        .modal-footer-compartir {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Modal de eliminar */
+.modal-eliminar {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px; /* Ajustar el ancho del modal */
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    z-index: 1050;
+    padding: 20px;
+}
+
+.modal-header-eliminar {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.modal-footer-eliminar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="user-info">
+                <img src="https://via.placeholder.com/50" alt="Avatar">
+                <div>
+                    <p>Bienvenido <b>{{ user.nombre }}</b> @admin</p>
+                </div>
+            </div>
+
+            <!-- Botón "+ Nuevo" con opciones desplegables -->
+            <button class="btn btn-light btn-block" id="nuevoButton">+ Nuevo</button>
+            <div class="module-options" id="moduleOptions">
+                <a href="#" id="crearCarpeta">Crear carpeta <span>&gt;</span></a>
+                <a href="#">Subir archivo <span>&gt;</span></a>
+            </div>
+            <!-- Botones adicionales -->
+            <button class="btn btn-light btn-block mt-2">Mis Archivos</button>
+            <button class="btn btn-light btn-block mt-2" id="compartidosBtn">Compartidos Conmigo</button>
+        </div>
+        <!-- Main Content -->
+        <div class="container-fluid">
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                <a class="navbar-brand" href="#">Intranet LMS</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item"><a class="nav-link" href="#">Calendario</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Horario</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Anuncios</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Archivos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Compartidos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">LSPCam</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Cerrar Sesión</a></li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="container-files mt-3">
+                <div class="d-flex flex-wrap">
+                    <div class="folder">Carpeta</div>
+                    <div class="folder">Carpeta</div>
+                    <div class="folder">Carpeta</div>
+                    <div class="folder">Carpeta</div>
+                </div>
+
+                <table class="table mt-3">
+                    <thead>
+                        <tr>
+                            <th>Nombre Archivo</th>
+                            <th>Fecha</th>
+                            <th>Tamaño</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for archivo in archivos %}
+                        <tr>
+                            <td>{{ archivo.nombre }}</td>
+                            <td>{{ archivo.fecha }}</td>
+                            <td>{{ archivo.tamano }}</td>
+                            <td class="icon-actions">
+                                <i class="fas fa-share-alt" onclick="abrirModalCompartir('{{ archivo.nombre }}')"></i>
+                                <i class="fas fa-download"></i>
+                                <i class="fas fa-trash-alt" onclick="abrirModalEliminar()"></i>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="modal-compartir" id="modalCompartir">
+                    <div class="modal-header-compartir">
+                        Compartir "<span id="nombreArchivo"></span>"
+                    </div>
+                    <input type="text" placeholder="Añadir usuario para compartir..." id="inputUsuario">
+                    <div id="usuariosAcceso">
+                        <p><b>Personas con acceso</b></p>
+                        <div class="persona-acceso">
+                            <img src="https://via.placeholder.com/30" alt="Avatar">
+                            <span>Pedro Jerez (tú)</span>
+                        </div>
+                    </div>
+                    <div class="modal-footer-compartir">
+                        <button class="btn btn-secondary" id="cancelarCompartir">Cancelar</button>
+                        <button class="btn btn-primary" id="confirmarCompartir">Confirmar</button>
+                    </div>
+                </div>
+                <div class="modal-eliminar" id="modalEliminar">
+                    <div class="modal-header-eliminar">Eliminar Archivo</div>
+                    <p>¿Estás seguro de que deseas eliminar "<span id="nombreArchivoEliminar"></span>"?</p>
+                    <div class="modal-footer-eliminar">
+                        <button class="btn btn-secondary" id="cancelarEliminar">Cancelar</button>
+                        <button class="btn btn-danger" id="confirmarEliminar">Eliminar</button>
+                    </div>
+                </div> 
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para crear carpeta -->
+    <div class="modal" id="modalCarpeta">
+        <div class="modal-header">
+            Nueva Carpeta
+        </div>
+        <input type="text" placeholder="Carpeta sin título" id="nombreCarpeta">
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancelarModal">Cancelar</button>
+            <button class="btn btn-primary" id="confirmarModal">Confirmar</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+    <script>
+        document.getElementById('nuevoButton').addEventListener('click', function () {
+            const moduleOptions = document.getElementById('moduleOptions');
+            moduleOptions.style.display = moduleOptions.style.display === 'none' || moduleOptions.style.display === ''
+                ? 'flex' : 'none';
+        });
+
+        document.getElementById('crearCarpeta').addEventListener('click', function () {
+            document.getElementById('modalCarpeta').style.display = 'block';
+        });
+
+        document.getElementById('cancelarModal').addEventListener('click', function () {
+            document.getElementById('modalCarpeta').style.display = 'none';
+        });
+
+        document.getElementById('confirmarModal').addEventListener('click', function () {
+            const nombre = document.getElementById('nombreCarpeta').value || 'Carpeta sin título';
+            alert(`Carpeta "${nombre}" creada.`);
+            document.getElementById('modalCarpeta').style.display = 'none';
+        });
+
+        // Abrir el modal de compartir archivo
+        function abrirModalCompartir(nombreArchivo) {
+            document.getElementById('nombreArchivo').textContent = nombreArchivo;
+            document.getElementById('modalCompartir').style.display = 'block';
+        }
+
+        // Cerrar el modal
+        function cerrarModal() {
+            document.getElementById('modalCompartir').style.display = 'none';
+        }
+
+        // Confirmar la acción de compartir
+        document.getElementById('cancelarCompartir').addEventListener('click', function () {
+            cerrarModal();
+        });
+
+        document.getElementById('confirmarCompartir').addEventListener('click', function () {
+            const nombreUsuario = document.getElementById('inputUsuario').value;
+            if (nombreUsuario) {
+                alert(`Archivo compartido con ${nombreUsuario}`);
+            }
+            cerrarModal();
+        });
+
+         // Abrir el modal de eliminar archivo
+function abrirModalEliminar(nombreArchivo) {
+    document.getElementById('nombreArchivoEliminar').textContent = nombreArchivo;
+    document.getElementById('modalEliminar').style.display = 'block';
+}
+
+// Cerrar el modal
+document.getElementById('cancelarEliminar').addEventListener('click', function () {
+    document.getElementById('modalEliminar').style.display = 'none';
+});
+
+// Confirmar la acción de eliminar
+document.getElementById('confirmarEliminar').addEventListener('click', function () {
+    const nombreArchivo = document.getElementById('nombreArchivoEliminar').textContent;
+    alert(`Archivo "${nombreArchivo}" eliminado.`);
+    document.getElementById('modalEliminar').style.display = 'none';
+});
+
+ document.getElementById('compartidosBtn').addEventListener('click', function () {
+        window.location.href = "/compartidos";
+    });
+    </script>
+</body>
+</html>

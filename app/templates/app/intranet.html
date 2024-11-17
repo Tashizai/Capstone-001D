@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intranet LMS</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            grid-column: span 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #343a40;
+            color: white;
+            padding: 10px;
+        }
+
+        header .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        header .user-info img {
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 15px;
+        }
+
+        nav ul li {
+            display: inline;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Horario, Anuncios, Calendario y Archivos */
+        .horario, .anuncios, .calendario, .archivos {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Horario tabla */
+        .horario table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .horario table th, .horario table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .calendario table {
+            width: 100%;
+        }
+
+        .calendario table th, .calendario table td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        .anuncios ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .anuncios ul li {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-left: 4px solid #343a40;
+        }
+
+        .archivos table {
+            width: 100%;
+        }
+
+        .archivos table th, .archivos table td {
+            padding: 10px;
+        }
+
+        .archivos .icon-actions i {
+            margin: 0 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="user-info">
+            <img src="https://via.placeholder.com/50" alt="Avatar">
+            <p>Bienvenido <b>USER</b> @admin</p>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#">Calendario</a></li>
+                <li><a href="#">Horario</a></li>
+                <li><a href="#">Anuncios</a></li>
+                <li><a href="#">Archivos</a></li>
+                <li><a href="#">Compartidos</a></li>
+                <li><a href="#">LSPCam</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Horario -->
+        <div class="horario">
+            <h3>Horario</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Horario trabajo</th>
+                        <th>Lunes</th>
+                        <th>Martes</th>
+                        <th>Miércoles</th>
+                        <th>Jueves</th>
+                        <th>Viernes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>8:30 - 10:00</td>
+                        <td>1ro Básico A</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>10:00 - 11:15</td>
+                        <td>I B</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>11:15 - 12:30</td>
+                        <td>4to Básico B</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>12:30 - 14:25</td>
+                        <td>Libre</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Calendario -->
+        <div class="calendario">
+            <h3>Calendario</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>D</th>
+                        <th>L</th>
+                        <th>M</th>
+                        <th>X</th>
+                        <th>J</th>
+                        <th>V</th>
+                        <th>S</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td></td><td></td><td></td><td>1</td><td>2</td><td>3</td><td>4</td>
+                    </tr>
+                    <tr>
+                        <td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td>
+                    </tr>
+                    <tr>
+                        <td>12</td><td>13</td><td>14</td><td>15</td><td>16</td><td>17</td><td>18</td>
+                    </tr>
+                    <tr>
+                        <td>19</td><td>20</td><td>21</td><td>22</td><td>23</td><td>24</td><td>25</td>
+                    </tr>
+                    <tr>
+                        <td>26</td><td>27</td><td>28</td><td>29</td><td>30</td><td>31</td><td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Anuncios -->
+        <div class="anuncios">
+            <h3>Anuncios</h3>
+            <ul>
+                <li>
+                    <strong>Reunión con personal administrativo</strong><br>
+                    Un gusto en saludar, avisar que en la tarde de hoy...
+                </li>
+                <li>
+                    <strong>Reunión con personal administrativo</strong><br>
+                    Un gusto en saludar, avisar que en la tarde de hoy...
+                </li>
+                <li>
+                    <strong>Reunión con personal administrativo</strong><br>
+                    Un gusto en saludar, avisar que en la tarde de hoy...
+                </li>
+                <li>
+                    <strong>Reunión con personal administrativo</strong><br>
+                    Un gusto en saludar, avisar que en la tarde de hoy...
+                </li>
+            </ul>
+        </div>
+
+        <!-- Archivos -->
+        <div class="archivos">
+            <h3>Archivos</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre Archivo</th>
+                        <th>Opciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>CualquieraArchivoDeEjemplo.docx</td>
+                        <td class="icon-actions">
+                            <i class="fas fa-download"></i>
+                            <i class="fas fa-share"></i>
+                            <i class="fas fa-trash"></i>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>CualquieraArchivoDeEjemplo.docx</td>
+                        <td class="icon-actions">
+                            <i class="fas fa-download"></i>
+                            <i class="fas fa-share"></i>
+                            <i class="fas fa-trash"></i>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>CualquieraArchivoDeEjemplo.docx</td>
+                        <td class="icon-actions">
+                            <i class="fas fa-download"></i>
+                            <i class="fas fa-share"></i>
+                            <i class="fas fa-trash"></i>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>CualquieraArchivoDeEjemplo.docx</td>
+                        <td class="icon-actions">
+                            <i class="fas fa-download"></i>
+                            <i class="fas fa-share"></i>
+                            <i class="fas fa-trash"></i>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
