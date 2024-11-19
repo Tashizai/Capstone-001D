@@ -134,3 +134,20 @@ class Archivo(models.Model):
     usuario = models.ForeignKey(Usuarios, on_delete=models.CASCADE)  # Usuario que subió el archivo
     carpeta = models.ForeignKey(Carpeta, on_delete=models.CASCADE, related_name='archivos', null=True, blank=True)
     compartido_con = models.ManyToManyField(Usuarios, related_name='archivos_compartidos', blank=True)  # Añadido
+
+
+class Reunion(models.Model):
+    DESTINATARIOS_CHOICES = [
+        ('Directivo', 'Directivo'),
+        ('Profesor', 'Profesor'),
+        ('Asistente', 'Asistente'),
+    ]
+
+    titulo = models.CharField(max_length=255)
+    descripcion = models.TextField()
+    fecha = models.DateTimeField()
+    destinatarios = models.CharField(max_length=10, choices=DESTINATARIOS_CHOICES)
+    creador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reuniones_creadas')
+
+    def __str__(self):
+        return f"{self.titulo} - {self.fecha.strftime('%d/%m/%Y %H:%M')}"

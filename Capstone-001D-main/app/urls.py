@@ -33,4 +33,7 @@ urlpatterns = [
     path('compartir/<str:tipo>/<int:recurso_id>/', views.compartir_recurso, name='compartir_recurso'),
     path('crear_subcarpeta/<int:carpeta_id>/', views.crear_subcarpeta, name='crear_subcarpeta'),
     path('compartidos/', views.ver_compartidos, name='ver_compartidos'),
+    path('reuniones/', views.ver_reuniones, name='ver_reuniones'),
+    path('reuniones/crear/', views.crear_reunion, name='crear_reunion'),
+    path('reunion/<int:reunion_id>/', views.ver_reunion, name='ver_reunion'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

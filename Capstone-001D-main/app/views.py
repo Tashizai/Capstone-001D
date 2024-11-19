@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.decorators import login_required
-from .models import Usuarios, HorarioBase, HorarioExcepcional, Curso, Evento
+from .models import Usuarios, HorarioBase, HorarioExcepcional, Curso, Evento, Reunion
 import json
 from django.utils.timezone import now
 import calendar
@@ -17,7 +17,7 @@ from .models import Carpeta, Archivo
 from django.utils import timezone
 from django.http import FileResponse, Http404
 from django.http import HttpResponseForbidden
-
+from django.utils.dateparse import parse_datetime
 
 def login_view(request):
     if request.method == 'POST':
@@ -654,3 +654,66 @@ def ver_compartidos(request):
     }
 
     return render(request, 'app/ver_compartidos.html', context)
+
+
+@login_required
+def ver_reuniones(request):
+    usuario_actual = request.user
+    ahora = timezone.now()
+
+    # Los usuarios administradores pueden ver todas las reuniones
+    if usuario_actual.is_staff or usuario_actual.is_superuser:
+        reuniones_proximas = Reunion.objects.filter(fecha__gte=ahora).select_related('creador')
+        reuniones_pasadas = Reunion.objects.filter(fecha__lt=ahora).select_related('creador')
+        es_administrador = True
+    else:
+        reuniones_proximas = Reunion.objects.filter(fecha__gte=ahora, destinatarios=usuario_actual.rol).select_related('creador')
+        reuniones_pasadas = Reunion.objects.filter(fecha__lt=ahora, destinatarios=usuario_actual.rol).select_related('creador')
+        es_administrador = False
+
+    context = {
+        'reuniones_proximas': reuniones_proximas,
+        'reuniones_pasadas': reuniones_pasadas,
+        'es_administrador': es_administrador,
+    }
+
+    return render(request, 'app/reuniones.html', context)
+
+@csrf_exempt
+@login_required
+def crear_reunion(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            titulo = data.get('titulo')
+            descripcion = data.get('descripcion')
+            fecha = data.get('fecha')
+            destinatarios = data.get('destinatarios')
+            creador = request.user  # Obtener el usuario actual como creador
+
+            if not titulo or not fecha or not destinatarios or not descripcion:
+                return JsonResponse({'status': 'error', 'message': 'Todos los campos son obligatorios.'}, status=400)
+
+            nueva_reunion = Reunion.objects.create(
+                titulo=titulo,
+                descripcion=descripcion,
+                fecha=fecha,
+                destinatarios=destinatarios,
+                creador=creador
+            )
+
+            return JsonResponse({'status': 'success', 'message': 'Reunión creada exitosamente.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
+
+@login_required
+def ver_reunion(request, reunion_id):
+    reunion = get_object_or_404(Reunion, id=reunion_id)
+
+    context = {
+        'reunion': reunion
+    }
+
+    return render(request, 'app/ver_reunion.html', context)

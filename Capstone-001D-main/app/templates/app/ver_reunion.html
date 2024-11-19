@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Sala de Reunión{% endblock %}
+
+{% block content %}
+<div class="contenedor-principal h-screen w-screen bg-gradient-to-b from-blue-100 to-blue-200 p-0 m-0">
+    <div class="container h-full w-full mx-auto flex p-0">
+        <!-- Contenedor principal de la reunión y el chat -->
+        <div class="flex-grow flex h-full">
+            <!-- Videollamada -->
+            <div id="videollamada" class="flex-grow bg-black p-0 mr-2 rounded-lg shadow-lg">
+                <div id="jitsi-container" class="w-full h-full" style="min-height: 100%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://meet.jit.si/external_api.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Inicializar Jitsi
+        const domain = "meet.jit.si";
+        const options = {
+            roomName: "IntranetLSPcam{{ reunion.id }}",  // Genera un nombre único para cada reunión
+            width: '100%',
+            height: '100%',
+            parentNode: document.getElementById('jitsi-container'),
+            configOverwrite: {
+                prejoinPageEnabled: false,
+                startWithAudioMuted: true,
+                startWithVideoMuted: true,
+            },
+            interfaceConfigOverwrite: {
+                TOOLBAR_BUTTONS: [
+                    'microphone', 'camera', 'desktop', 'chat', 'tileview', 'hangup'
+                ],
+                SHOW_JITSI_WATERMARK: false,
+            },
+        };
+        const api = new JitsiMeetExternalAPI(domain, options);
+
+        // Enviar mensaje de chat
+        const formChat = document.getElementById('formChat');
+        formChat.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const mensaje = document.getElementById('mensajeInput').value.trim();
+            if (mensaje) {
+                // Aquí puedes agregar la lógica para enviar el mensaje por WebSocket o cualquier servicio de chat en tiempo real que desees usar.
+                document.getElementById('mensajes').innerHTML += `
+                    <div class="mensaje mb-2">
+                        <span class="font-semibold">Tú:</span> ${mensaje}
+                    </div>`;
+                document.getElementById('mensajeInput').value = '';
+                document.getElementById('mensajes').scrollTop = document.getElementById('mensajes').scrollHeight;
+            }
+        });
+
+        // Controles inferiores (Micrófono, Video, Compartir Pantalla, Colgar)
+        document.getElementById('finalizarLlamada').addEventListener('click', function () {
+            api.dispose(); // Finalizar la llamada
+        });
+
+        document.getElementById('toggleMicrofono').addEventListener('click', function () {
+            api.executeCommand('toggleAudio');
+        });
+
+        document.getElementById('toggleVideo').addEventListener('click', function () {
+            api.executeCommand('toggleVideo');
+        });
+
+        // Añadir botón para compartir pantalla
+        document.getElementById('toggleScreenShare').addEventListener('click', function () {
+            api.executeCommand('toggleShareScreen');
+        });
+    });
+</script>
+{% endblock %}

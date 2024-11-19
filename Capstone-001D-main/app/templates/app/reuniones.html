@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reuniones{% endblock %}
+
+{% block content %}
+<div class="contenedor-principal min-h-screen bg-gradient-to-b from-blue-100 to-blue-200 p-8">
+    <div class="container mx-auto">
+        <!-- Título y Botón de Crear Reunión -->
+        <div class="titulo-contenedor flex justify-between mb-8 items-center">
+            <h1 class="text-4xl font-semibold">Reuniones</h1>
+            {% if es_administrador %}
+            <button id="crearReunionBtn"
+                class="boton bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg transition-transform transform hover:scale-105 hover:bg-green-700">
+                Crear Reunión
+            </button>
+            {% endif %}
+        </div>
+
+        <!-- Reuniones Próximas -->
+        <div class="mb-12">
+            <h2 class="text-2xl font-semibold mb-4">Reuniones Próximas</h2>
+            <div class="reuniones-contenedor grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {% for reunion in reuniones_proximas %}
+                <a href="{% url 'ver_reunion' reunion.id %}">
+                    <div class="reunion bg-white p-4 rounded-lg shadow-md transition-transform transform hover:scale-105 hover:bg-blue-50 max-w-xs">
+                        <h3 class="text-xl font-semibold mb-2">{{ reunion.titulo }}</h3>
+                        <p class="text-gray-700">Fecha: {{ reunion.fecha|date:"d/m/Y H:i" }}</p>
+                        <p class="text-sm text-gray-600">Dirigido a: {{ reunion.destinatarios }}</p>
+                        <p class="text-sm text-gray-600">Creador: {{ reunion.creador.nombre }} {{ reunion.creador.apellido }}</p>
+                        <p class="text-sm mt-2">{{ reunion.descripcion }}</p>
+                    </div>
+                </a>
+                {% endfor %}
+                {% if reuniones_proximas|length == 0 %}
+                <p class="text-gray-700">No hay reuniones próximas.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Reuniones Pasadas -->
+        <div class="mb-12">
+            <h2 class="text-2xl font-semibold mb-4">Reuniones Pasadas</h2>
+            <div class="reuniones-contenedor grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {% for reunion in reuniones_pasadas %}
+                <div class="reunion bg-white p-4 rounded-lg shadow-md transition-transform transform hover:scale-105 hover:bg-blue-50 max-w-xs">
+                    <h3 class="text-xl font-semibold mb-2">{{ reunion.titulo }}</h3>
+                    <p class="text-gray-700">Fecha: {{ reunion.fecha|date:"d/m/Y H:i" }}</p>
+                    <p class="text-sm text-gray-600">Dirigido a: {{ reunion.destinatarios }}</p>
+                    <p class="text-sm text-gray-600">Creador: {{ reunion.creador.nombre }} {{ reunion.creador.apellido }}</p>
+                    <p class="text-sm mt-2">{{ reunion.descripcion }}</p>
+                </div>
+                {% endfor %}
+                {% if reuniones_pasadas|length == 0 %}
+                <p class="text-gray-700">No hay reuniones pasadas.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para crear reunión -->
+<div id="crearReunionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white p-8 rounded-lg shadow-xl w-1/3 mx-auto my-auto text-gray-800">
+        <h2 class="text-2xl font-semibold mb-4 text-blue-600">Crear Nueva Reunión</h2>
+        <form id="crearReunionForm">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="tituloReunionInput" class="block text-lg font-semibold mb-2">Título de la reunión:</label>
+                <input type="text" id="tituloReunionInput" class="w-full p-4 border rounded-lg text-gray-700"
+                    placeholder="Ingrese el título de la reunión" required />
+            </div>
+            <div class="mb-4">
+                <label for="descripcionReunionInput" class="block text-lg font-semibold mb-2">Descripción:</label>
+                <textarea id="descripcionReunionInput" class="w-full p-4 border rounded-lg text-gray-700"
+                    placeholder="Ingrese la descripción de la reunión" required></textarea>
+            </div>
+            <div class="mb-4">
+                <label for="fechaReunionInput" class="block text-lg font-semibold mb-2">Fecha y hora:</label>
+                <input type="datetime-local" id="fechaReunionInput" class="w-full p-4 border rounded-lg text-gray-700"
+                    required />
+            </div>
+            <div class="mb-4">
+                <label for="destinatariosInput" class="block text-lg font-semibold mb-2">Dirigido a:</label>
+                <select id="destinatariosInput" class="w-full p-4 border rounded-lg text-gray-700">
+                    <option value="Directivo">Directivos</option>
+                    <option value="Profesor">Profesores</option>
+                    <option value="Asistente">Asistentes</option>
+                </select>
+            </div>
+            <div class="flex justify-end space-x-4">
+                <button type="button" id="cerrarModalCrearReunion"
+                    class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600">Cancelar</button>
+                <button type="button" id="guardarReunionBtn"
+                    class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">Crear Reunión</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const csrfTokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
+        const csrfToken = csrfTokenElement ? csrfTokenElement.value : null;
+
+        if (!csrfToken) {
+            console.error("CSRF token not found.");
+            return;
+        }
+
+        // Modal Crear Reunión
+        const crearReunionBtn = document.getElementById('crearReunionBtn');
+        const crearReunionModal = document.getElementById('crearReunionModal');
+        const cerrarReunionModalBtn = document.getElementById('cerrarModalCrearReunion');
+        const guardarReunionBtn = document.getElementById('guardarReunionBtn');
+
+        // Abrir modal de crear reunión
+        if (crearReunionBtn) {
+            crearReunionBtn.addEventListener('click', function () {
+                crearReunionModal.classList.remove('hidden');
+                crearReunionModal.classList.add('flex');
+            });
+        }
+
+        // Cerrar modal de crear reunión
+        if (cerrarReunionModalBtn) {
+            cerrarReunionModalBtn.addEventListener('click', function () {
+                crearReunionModal.classList.add('hidden');
+                crearReunionModal.classList.remove('flex');
+            });
+        }
+
+        // Guardar reunión
+        if (guardarReunionBtn) {
+            guardarReunionBtn.addEventListener('click', function () {
+                const titulo = document.getElementById('tituloReunionInput').value.trim();
+                const descripcion = document.getElementById('descripcionReunionInput').value.trim();
+                const fecha = document.getElementById('fechaReunionInput').value;
+                const destinatarios = document.getElementById('destinatariosInput').value;
+
+                if (titulo && descripcion && fecha && destinatarios) {
+                    fetch("{% url 'crear_reunion' %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken,
+                        },
+                        body: JSON.stringify({
+                            titulo: titulo,
+                            descripcion: descripcion,
+                            fecha: fecha,
+                            destinatarios: destinatarios,
+                        }),
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Error en la respuesta del servidor');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.status === 'success') {
+                                window.location.reload();
+                            } else {
+                                alert('Error al crear la reunión: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Ocurrió un error inesperado al crear la reunión.');
+                        });
+                } else {
+                    alert('Por favor, completa todos los campos del formulario.');
+                }
+            });
+        }
+    });
+</script>
+
+{% endblock %}
