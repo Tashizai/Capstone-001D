@@ -5,19 +5,18 @@ from django.contrib.auth.models import Group
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import Usuarios, HorarioBase, HorarioExcepcional, Curso, Evento, Reunion
 import json
 from django.utils.timezone import now
-import calendar
 from datetime import date
 from .models import Anuncio
-from .forms import AnuncioForm
 from .models import Carpeta, Archivo
 from django.utils import timezone
 from django.http import FileResponse, Http404
 from django.http import HttpResponseForbidden
 from django.utils.dateparse import parse_datetime
+from django.contrib import messages
 
 def login_view(request):
     if request.method == 'POST':
@@ -366,45 +365,6 @@ def editar_evento(request, evento_id):
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
 
 
-def ver_horario_usuario_cualquiera(request, usuario_id):
-    usuario = get_object_or_404(Usuarios, id_usuario=usuario_id)
-    cursos = Curso.objects.all()
-
-    # Días de la semana y bloques predeterminados
-    dias = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES']
-    bloques = [
-        "08:30 - 10:00 Primer bloque",
-        "10:00 - 10:20 Recreo",
-        "10:20 - 11:50 Segundo bloque",
-        "11:50 - 12:10 Recreo",
-        "12:10 - 13:40 Tercer bloque",
-        "13:40 - 14:25 Almuerzo",
-        "14:25 - 15:55 Ultimo Bloque"
-    ]
-
-    # Crear un diccionario con los horarios por (día, bloque)
-    horarios = HorarioBase.objects.filter(usuario=usuario)
-    horarios_dict = {(h.dia_semana, h.bloque): h for h in horarios}
-
-    # Preparar los datos para el template
-    horario_lista = []
-    for bloque in bloques:
-        fila = {
-            'bloque': bloque,
-            'datos': [horarios_dict.get((dia, bloque), None) for dia in dias]
-        }
-        horario_lista.append(fila)
-
-    context = {
-        'usuario': usuario,
-        'cursos': cursos,
-        'dias': dias,
-        'bloques': bloques,  # Aseguramos que los bloques estén disponibles en el template
-        'horario_lista': horario_lista,
-    }
-
-    return render(request, 'app/horario_user.html', context)
-
 
 def lista_anuncios(request):
     anuncios = Anuncio.objects.all().order_by('-fecha_creacion')
@@ -717,3 +677,95 @@ def ver_reunion(request, reunion_id):
     }
 
     return render(request, 'app/ver_reunion.html', context)
+
+
+def es_administrador_o_directivo(user):
+    return user.is_staff or user.rol == 'Directivo'
+
+@user_passes_test(es_administrador_o_directivo)
+@login_required
+def crear_usuario(request):
+    if request.method == 'POST':
+        # Obtener los datos del formulario
+        nombre = request.POST.get('nombre').strip()
+        apellido = request.POST.get('apellido').strip()
+        run = request.POST.get('run').strip()
+        email = request.POST.get('email').strip()
+        password = request.POST.get('password').strip()
+        rol = request.POST.get('rol')
+
+        # Validar los datos
+        if not (nombre and apellido and run and password and rol):
+            messages.error(request, 'Todos los campos son obligatorios.')
+            return render(request, 'app/crear_usuario.html')
+
+        if Usuarios.objects.filter(run=run).exists():
+            messages.error(request, 'El RUT ingresado ya está registrado.')
+            return render(request, 'app/crear_usuario.html')
+
+        if email and Usuarios.objects.filter(email=email).exists():
+            messages.error(request, 'El correo ingresado ya está registrado.')
+            return render(request, 'app/crear_usuario.html')
+
+        # Configurar `is_staff` si el rol es 'Directivo'
+        es_staff = True if rol == 'Directivo' else False
+
+        # Crear el usuario
+        usuario = Usuarios.objects.create(
+            nombre=nombre,
+            apellido=apellido,
+            run=run,
+            email=email,
+            rol=rol,
+            is_staff=es_staff  # Definir si el usuario es staff
+        )
+        usuario.set_password(password)
+        usuario.save()
+
+        messages.success(request, 'Usuario creado exitosamente.')
+        return redirect('listado_usuarios')
+
+    # Si es un GET o algún otro método, renderiza el formulario
+    return render(request, 'app/crear_usuario.html')
+
+
+@login_required
+@user_passes_test(es_administrador_o_directivo)
+def listado_usuarios(request):
+    # Si hay una búsqueda, filtrar por RUT
+    query = request.GET.get('q')
+    if query:
+        usuarios = Usuarios.objects.filter(run__icontains=query)
+    else:
+        usuarios = Usuarios.objects.all()
+
+    context = {
+        'usuarios': usuarios,
+    }
+    return render(request, 'app/listado_usuarios.html', context)
+
+
+@login_required
+@user_passes_test(es_administrador_o_directivo)
+def ver_perfil_usuario(request, id_usuario):
+    # Obtener el usuario a partir del ID
+    usuario = get_object_or_404(Usuarios, id_usuario=id_usuario)
+
+    if request.method == 'POST':
+        # Editar la información del usuario
+        usuario.nombre = request.POST.get('nombre', usuario.nombre)
+        usuario.apellido = request.POST.get('apellido', usuario.apellido)
+        usuario.email = request.POST.get('email', usuario.email)
+        usuario.run = request.POST.get('run', usuario.run)
+        usuario.rol = request.POST.get('rol', usuario.rol)
+        password = request.POST.get('password', None)
+        if password:
+            usuario.set_password(password)
+        
+        usuario.save()
+        messages.success(request, 'Información actualizada exitosamente.')
+
+    context = {
+        'usuario': usuario,
+    }
+    return render(request, 'app/ver_perfil_usuario.html', context)

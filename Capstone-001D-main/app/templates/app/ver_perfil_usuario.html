@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Perfil de Usuario{% endblock %}
+
+{% block content %}
+<div class="contenedor-principal min-h-screen p-8" style="padding-top: 2rem;">
+    <div class="container mx-auto bg-white bg-opacity-80 p-6 rounded-lg shadow-lg flex" style="gap: 2rem;">
+
+        <!-- Sección de Información General -->
+        <div class="seccion-informacion-general" style="width: 30%; text-align: center; border-right: 2px solid #e2e8f0;">
+            <div class="mb-6 flex justify-center">
+                <img src="{% static 'app/img/default_profile.png' %}" alt="Foto de perfil" class="rounded-full shadow-md" style="width: 150px; height: 150px; object-fit: cover;">
+            </div>
+            <h2 class="text-2xl font-semibold mb-2">{{ usuario.nombre }} {{ usuario.apellido }}</h2>
+            <p class="text-gray-500 mb-4">{{ usuario.email }}</p>
+        </div>
+
+        <!-- Sección de Edición del Perfil -->
+        <div class="seccion-edicion-perfil" style="width: 70%; padding-left: 2rem;">
+            <h2 class="text-2xl font-semibold text-blue-600 mb-6">Perfil</h2>
+            <form method="POST" action="">
+                {% csrf_token %}
+
+                <!-- Mensajes -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="mb-4 p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Nombre -->
+                    <div>
+                        <label for="nombre" class="block text-lg font-semibold mb-1">Nombre:</label>
+                        <input type="text" id="nombre" name="nombre" value="{{ usuario.nombre }}" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                    </div>
+                    <!-- Apellido -->
+                    <div>
+                        <label for="apellido" class="block text-lg font-semibold mb-1">Apellido:</label>
+                        <input type="text" id="apellido" name="apellido" value="{{ usuario.apellido }}" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                    </div>
+                    <!-- RUT -->
+                    <div>
+                        <label for="run" class="block text-lg font-semibold mb-1">RUT:</label>
+                        <input type="text" id="run" name="run" value="{{ usuario.run }}" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" readonly />
+                    </div>
+                    <!-- Correo Electrónico -->
+                    <div>
+                        <label for="email" class="block text-lg font-semibold mb-1">Correo Electrónico:</label>
+                        <input type="email" id="email" name="email" value="{{ usuario.email }}" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                    </div>
+                    <!-- Contraseña -->
+                    <div>
+                        <label for="password" class="block text-lg font-semibold mb-1">Contraseña:</label>
+                        <input type="password" id="password" name="password" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Nueva contraseña (opcional)" />
+                    </div>
+                    <!-- Rol -->
+                    <div>
+                        <label for="rol" class="block text-lg font-semibold mb-1">Rol:</label>
+                        <select id="rol" name="rol" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <option value="Directivo" {% if usuario.rol == 'Directivo' %}selected{% endif %}>Directivo</option>
+                            <option value="Profesor" {% if usuario.rol == 'Profesor' %}selected{% endif %}>Profesor</option>
+                            <option value="Asistente" {% if usuario.rol == 'Asistente' %}selected{% endif %}>Asistente</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex justify-end mt-8">
+                    <button type="submit" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">Guardar</button>
+                    <button type="reset" class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 ml-4">Limpiar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

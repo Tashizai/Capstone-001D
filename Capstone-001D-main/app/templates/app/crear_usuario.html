@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Usuario{% endblock %}
+
+{% block content %}
+<div class="contenedor-principal min-h-screen from-blue-100 to-blue-200 py-16 flex items-center justify-center">
+    <div class="bg-white bg-gradient-to-b w-full max-w-lg rounded-lg shadow-lg p-4">
+        <h2 class="text-3xl font-bold text-center text-blue-600 mb-6">Crear Usuario</h2>
+
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <p class="text-center text-sm {% if message.tags == 'error' %}text-red-600{% elif message.tags == 'success' %}text-green-600{% endif %}">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form action="" method="post">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 gap-6">
+                <!-- Campo Nombre -->
+                <div class="mb-4">
+                    <label for="nombre" class="block text-lg font-semibold text-gray-800 mb-2">Nombre:</label>
+                    <input type="text" id="nombre" name="nombre" class="w-full p-4 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 focus:ring focus:ring-blue-200" placeholder="Ingrese el nombre" required>
+                </div>
+
+                <!-- Campo Apellido -->
+                <div class="mb-4">
+                    <label for="apellido" class="block text-lg font-semibold text-gray-800 mb-2">Apellido:</label>
+                    <input type="text" id="apellido" name="apellido" class="w-full p-4 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 focus:ring focus:ring-blue-200" placeholder="Ingrese el apellido" required>
+                </div>
+
+                <!-- Campo RUT -->
+                <div class="mb-4">
+                    <label for="run" class="block text-lg font-semibold text-gray-800 mb-2">RUT:</label>
+                    <input type="text" id="run" name="run" class="w-full p-4 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 focus:ring focus:ring-blue-200" placeholder="Ingrese el RUT sin puntos ni guión" required>
+                </div>
+
+                <!-- Campo Correo Electrónico -->
+                <div class="mb-4">
+                    <label for="email" class="block text-lg font-semibold text-gray-800 mb-2">Correo Electrónico:</label>
+                    <input type="email" id="email" name="email" class="w-full p-4 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 focus:ring focus:ring-blue-200" placeholder="Ingrese el correo electrónico">
+                </div>
+
+                <!-- Campo Contraseña -->
+                <div class="mb-4">
+                    <label for="password" class="block text-lg font-semibold text-gray-800 mb-2">Contraseña:</label>
+                    <input type="password" id="password" name="password" class="w-full p-4 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 focus:ring focus:ring-blue-200" placeholder="Ingrese la contraseña" required>
+                </div>
+
+                <!-- Campo Rol -->
+                <div class="mb-4">
+                    <label for="rol" class="block text-lg font-semibold text-gray-800 mb-2">Rol:</label>
+                    <select id="rol" name="rol" class="w-full p-4 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-blue-500 focus:ring focus:ring-blue-200">
+                        <option value="Directivo">Directivo</option>
+                        <option value="Profesor">Profesor</option>
+                        <option value="Asistente">Asistente</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Botón Crear Usuario -->
+            <div class="flex justify-center mt-8">
+                <button type="submit" class="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg font-semibold hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300">
+                    Crear Usuario
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
