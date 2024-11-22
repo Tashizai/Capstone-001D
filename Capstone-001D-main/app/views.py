@@ -218,8 +218,8 @@ def calendario(request):
 
     # Filtrar eventos creados por el usuario o compartidos con el usuario autenticado
     if request.user.is_staff:
-        # Si es admin, ve todos los eventos (propios y compartidos)
-        eventos = Evento.objects.filter(creador=request.user) | Evento.objects.filter(compartido_con=request.user)
+        # Si es admin, ve todos los eventos (propios y compartidos por otros)
+        eventos = Evento.objects.all()
     else:
         # Si es usuario normal, solo ve sus eventos o eventos compartidos con él
         eventos = Evento.objects.filter(creador=request.user) | Evento.objects.filter(compartido_con=request.user)
@@ -247,13 +247,13 @@ def calendario(request):
     _, dias_en_mes = calendar.monthrange(current_year, current_month)
 
     context = {
-    'eventos': json.dumps(eventos_list),  # Convertimos los eventos a JSON
-    'colegas': colegas,
-    'today': today,
-    'current_month': current_month,
-    'current_year': current_year,
-    'dias_del_mes': range(1, dias_en_mes + 1),
-    'es_admin': request.user.is_staff  # Añadir esta bandera al contexto para identificar si es admin
+        'eventos': json.dumps(eventos_list),  # Convertimos los eventos a JSON
+        'colegas': colegas,
+        'today': today,
+        'current_month': current_month,
+        'current_year': current_year,
+        'dias_del_mes': range(1, dias_en_mes + 1),
+        'es_admin': request.user.is_staff  # Añadir esta bandera al contexto para identificar si es admin
     }
 
     return render(request, 'app/calendario.html', context)
@@ -261,13 +261,14 @@ def calendario(request):
 @login_required
 def agregar_evento(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        titulo = data.get('titulo')
-        descripcion = data.get('descripcion')
-        fecha = data.get('fecha')
-        compartido_ids = data.get('compartido_con', [])
-
         try:
+            data = json.loads(request.body)
+            titulo = data.get('titulo')
+            descripcion = data.get('descripcion')
+            fecha = data.get('fecha')
+            compartido_ids = data.get('compartido_con', [])
+
+            # Crear el evento
             evento = Evento.objects.create(
                 titulo=titulo,
                 descripcion=descripcion,
@@ -275,55 +276,61 @@ def agregar_evento(request):
                 creador=request.user
             )
 
+            # Si hay usuarios con quienes compartir el evento, añadirlos
             if compartido_ids:
                 usuarios = Usuarios.objects.filter(id_usuario__in=compartido_ids)
                 evento.compartido_con.set(usuarios)
 
             return JsonResponse({'status': 'success', 'message': 'Evento añadido correctamente.'})
+
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
-
 
 @login_required
 def eliminar_evento(request, evento_id):
     if request.method == 'DELETE':
         try:
-            evento = get_object_or_404(Evento, id=evento_id, creador=request.user)
-            evento.delete()
-            return JsonResponse({'status': 'success', 'message': 'Evento eliminado correctamente.'})
+            # Solo el creador del evento o el administrador puede eliminar un evento
+            evento = get_object_or_404(Evento, id=evento_id)
+            if request.user.is_staff or evento.creador == request.user:
+                evento.delete()
+                return JsonResponse({'status': 'success', 'message': 'Evento eliminado correctamente.'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'No tienes permiso para eliminar este evento.'}, status=403)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
-
 
 @login_required
 def editar_evento(request, evento_id):
     if request.method == 'POST':
         try:
-            evento = get_object_or_404(Evento, id=evento_id, creador=request.user)
-            data = json.loads(request.body)
+            evento = get_object_or_404(Evento, id=evento_id)
+            # Solo el creador del evento o el administrador puede editar un evento
+            if request.user.is_staff or evento.creador == request.user:
+                data = json.loads(request.body)
 
-            evento.titulo = data.get('titulo', evento.titulo)
-            evento.descripcion = data.get('descripcion', evento.descripcion)
-            evento.fecha = data.get('fecha', evento.fecha)
+                evento.titulo = data.get('titulo', evento.titulo)
+                evento.descripcion = data.get('descripcion', evento.descripcion)
+                evento.fecha = data.get('fecha', evento.fecha)
 
-            compartido_ids = data.get('compartido_con', [])
-            if compartido_ids:
-                usuarios = Usuarios.objects.filter(id_usuario__in=compartido_ids)
-                evento.compartido_con.set(usuarios)
+                compartido_ids = data.get('compartido_con', [])
+                if compartido_ids:
+                    usuarios = Usuarios.objects.filter(id_usuario__in=compartido_ids)
+                    evento.compartido_con.set(usuarios)
 
-            evento.save()
+                evento.save()
 
-            return JsonResponse({'status': 'success', 'message': 'Evento editado correctamente.'})
+                return JsonResponse({'status': 'success', 'message': 'Evento editado correctamente.'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'No tienes permiso para editar este evento.'}, status=403)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
-
-
 
 def lista_anuncios(request):
     anuncios = Anuncio.objects.all().order_by('-fecha_creacion')
