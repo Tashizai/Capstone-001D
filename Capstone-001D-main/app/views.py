@@ -28,63 +28,22 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
-
-            # Redirigir según el tipo de usuario
-            if user.is_superuser or user.is_staff:  # Vista del admin
-                return redirect('admin_home')
-            else:  # Vista del usuario regular
-                return redirect('home')
+            # Redirigir a la vista común para todos los usuarios
+            return redirect('home')
         else:
             return HttpResponse("Credenciales incorrectas. Inténtalo de nuevo.")
 
     return render(request, 'app/login.html')
 
-@login_required
-def home_view(request):
-    # Obtener el usuario logueado
-    usuario = get_object_or_404(Usuarios, id_usuario=request.user.id_usuario)
-
-    # Días de la semana y bloques de horarios
-    dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']
-    bloques = [
-        "08:30 - 10:00 Primer bloque",
-        "10:00 - 10:20 Recreo",
-        "10:20 - 11:50 Segundo bloque",
-        "11:50 - 12:10 Recreo",
-        "12:10 - 13:40 Tercer bloque",
-        "13:40 - 14:25 Almuerzo",
-        "14:25 - 15:55 Último Bloque"
-    ]
-
-    # Crear una lista para almacenar los horarios de cada bloque y día
-    horario_lista = []
-
-    # Recorrer cada bloque y obtener la información para cada día
-    for bloque in bloques:
-        fila = [bloque]
-        for dia in dias:
-            asignacion = HorarioBase.objects.filter(usuario=usuario, dia_semana=dia.upper(), bloque=bloque).first()
-            fila.append(asignacion)
-        horario_lista.append(fila)
-
-    context = {
-        'usuario': usuario,
-        'horario_lista': horario_lista,
-        'dias': dias,
-        'anuncios': [],  # Añade tus anuncios si tienes alguno
-        'archivos': []   # Añade tus archivos si tienes alguno
-    }
-
-    return render(request, 'app/home.html', context)
 
 @login_required
-def admin_home_view(request):
+def home(request):
     usuarios = Usuarios.objects.all()  # Obtener todos los usuarios
 
     context = {
         'usuarios': usuarios
     }
-    return render(request, 'app/admin-home.html', context)
+    return render(request, 'app/home.html', context)
 
 def logout_view(request):
     # Cerrar sesión y redirigir al login

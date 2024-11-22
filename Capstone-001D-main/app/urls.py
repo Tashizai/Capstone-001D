@@ -7,8 +7,7 @@ from django.conf import settings
 
 urlpatterns = [
     path('', views.login_view, name='login'),  # Página de inicio de sesión
-    path('home/', views.home_view, name='home'),  # Página principal para usuarios normales
-    path('admin-home/', views.admin_home_view, name='admin_home'),  # Página del administrador
+    path('home/', views.home, name='home'),  # Página principal para usuarios normales
     path('logout/', views.logout_view, name='logout'),  # Cerrar sesión
     path('crear-usuario/', views.crear_usuario, name='crear_usuario'),
     path('ver_horario/<int:usuario_id>/', views.ver_horario_usuario, name='ver_horario'),
