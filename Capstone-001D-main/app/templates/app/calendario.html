@@ -4,136 +4,230 @@
 {% block title %}Calendario{% endblock %}
 
 {% block content %}
-<div class="flex min-h-screen bg-gray-100 px-8">
-    <!-- Sidebar con el mini calendario -->
-    <aside class="w-1/5 bg-gray-200 p-6 shadow-lg rounded-lg">
-        <h2 class="text-xl font-semibold mb-6">Calendarios</h2>
 
-        <button  class="bg-blue-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-600 w-full mb-6">
-            <a href="{% url 'home' %}">
-                ← Volver al Home
-            </a>
-        </button>
-
-        <div class="text-center">
-            <div class="flex items-center justify-between mb-4">
-                <button id="prevMonth" class="text-2xl font-bold">&larr;</button>
-                <h3 id="miniCalendarTitle" class="text-gray-700"></h3>
-                <button id="nextMonth" class="text-2xl font-bold">&rarr;</button>
-            </div>
-
-            <div id="miniCalendarDays" class="grid grid-cols-7 gap-2 mb-4"></div>
-
-            <h3 class="text-lg font-semibold mt-4">Eventos del Día</h3>
-            <div id="eventosSeleccionados" class="mt-2 space-y-2"></div>
+<div class="calendar-container flex min-h-screen p-8">
+    <!-- Panel de Eventos del Día -->
+    <aside class="event-panel w-1/3 p-8 bg-blue-500 rounded-lg shadow-lg mr-8">
+        <h2 class="text-3xl font-bold mb-6 text-white">Eventos del Día</h2>
+        <div id="eventosSeleccionados" class="space-y-4">
+            <p class="text-white">Seleccione un día para ver sus eventos.</p>
         </div>
     </aside>
 
     <!-- Calendario Principal -->
-    <main class="flex-1 p-10">
+    <main class="calendar-main flex-1 bg-blue-500 p-8 rounded-lg shadow-lg">
         <div class="flex justify-between items-center mb-6">
-            <h1 id="mainCalendarTitle" class="text-2xl font-semibold"></h1>
+            <button id="prevMonth" class="text-2xl font-bold text-white px-2">&#8592;</button>
+            <h1 id="mainCalendarTitle" class="text-4xl font-semibold text-white mx-4"></h1>
+            <button id="nextMonth" class="text-2xl font-bold text-white px-2">&#8594;</button>
             <button id="abrir-modal" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
                 + Añadir Evento
             </button>
         </div>
-        <div id="calendarDays" class="grid grid-cols-7 gap-6"></div>
+        <div id="calendarDays" class="grid grid-cols-7 gap-4 text-center"></div>
     </main>
 </div>
 
-<!-- Modal -->
-<div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-1/3 mx-auto my-auto">
-        <h2 class="text-xl font-semibold mb-4">Añadir Evento</h2>
+<!-- Modal Añadir/Editar Evento -->
+<div id="modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center flex transition-opacity duration-300 ease-in-out">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md mx-auto">
+        <h2 class="text-xl font-semibold mb-4" id="modal-title">Añadir Evento</h2>
         <form id="form-evento">
             {% csrf_token %}
-            <input type="text" name="titulo" placeholder="Título del Evento" class="w-full p-2 border mb-4" required>
-            <textarea name="descripcion" placeholder="Descripción" class="w-full p-2 border mb-4"></textarea>
-            <input type="date" name="fecha" class="w-full p-2 border mb-4" required>
-
-            <label for="compartido_con" class="block mb-2">Compartir con:</label>
-            <select name="compartido_con" multiple class="w-full p-2 border mb-4">
-                {% for colega in colegas %}
-                <option value="{{ colega.id_usuario }}">{{ colega.nombre }} {{ colega.apellido }}</option>
-                {% endfor %}
-            </select>
-
+            <div class="mb-4">
+                <input type="text" name="titulo" id="titulo" placeholder="Título del Evento"
+                    class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            </div>
+            <div class="mb-4">
+                <textarea name="descripcion" id="descripcion" placeholder="Descripción"
+                    class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="4"></textarea>
+            </div>
+            <div class="mb-4">
+                <input type="date" name="fecha" id="fecha"
+                    class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            </div>
+            <div class="mb-4">
+                <label for="compartido_con" class="block mb-2">Compartir con:</label>
+                <select name="compartido_con" id="compartido_con" multiple
+                    class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    {% for colega in colegas %}
+                    <option value="{{ colega.id_usuario }}">{{ colega.nombre }} {{ colega.apellido }}</option>
+                    {% endfor %}
+                </select>
+            </div>
             <div class="flex justify-end space-x-4">
-                <button type="button" id="cerrar-modal" class="bg-red-500 text-white px-4 py-2 rounded-lg">
-                    Cancelar
-                </button>
-                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg">
-                    Guardar
-                </button>
+                <button type="button" id="cerrar-modal"
+                    class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">Cancelar</button>
+                <button type="submit"
+                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">Guardar</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Modal para confirmar eliminación -->
-<div id="modal-eliminar" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-1/3 mx-auto my-auto">
-        <h2 class="text-xl font-semibold mb-4">Eliminar Evento</h2>
-        <p>¿Estás seguro de que deseas eliminar este evento?</p>
-        <div class="flex justify-end space-x-4 mt-4">
-            <button type="button" id="cancelar-eliminar" class="bg-gray-500 text-white px-4 py-2 rounded-lg">
-                Cancelar
-            </button>
-            <button type="button" id="confirmar-eliminar" class="bg-red-500 text-white px-4 py-2 rounded-lg">
-                Eliminar
-            </button>
-        </div>
-    </div>
-</div>
+<!-- CSS -->
+<style>
+    .calendar-container {
+        gap: 2rem;
+    }
+
+    .event-panel {
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+    }
+
+    .calendar-main {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #calendarDays {
+        grid-template-columns: repeat(7, 1fr);
+        gap: 1.5rem;
+    }
+
+    #calendarDays > div {
+        padding: 1rem;
+        background: #eeeeee;
+        border-radius: 1rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        cursor: pointer;
+    }
+
+    #calendarDays > div.has-event {
+        background: #ffe4e6;
+        /* Rosado pastel */
+    }
+
+    #calendarDays > div:hover {
+        background: #f0f4ff;
+        transform: scale(1.03);
+        transition: all 0.3s ease;
+    }
+
+    #calendarDays > div span {
+        font-weight: bold;
+        font-size: 1.5rem;
+    }
+
+    #calendarDays > div p {
+        margin: 0.25rem 0;
+    }
+
+    #modal {
+        align-items: center;
+    }
+
+    .event-panel .event-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .event-panel .event-item .event-details {
+        flex-grow: 1;
+    }
+</style>
 
 <script>
-
     document.addEventListener('DOMContentLoaded', () => {
-        const miniCalendarDays = document.getElementById('miniCalendarDays');
+        // Obtener referencias a los elementos del DOM
         const calendarDays = document.getElementById('calendarDays');
-        const modal = document.getElementById('modal');
-        const formEvento = document.getElementById('form-evento');
+        const mainCalendarTitle = document.getElementById('mainCalendarTitle');
+        const prevMonthButton = document.getElementById('prevMonth');
+        const nextMonthButton = document.getElementById('nextMonth');
         const abrirModalBtn = document.getElementById('abrir-modal');
         const cerrarModalBtn = document.getElementById('cerrar-modal');
-        const mainCalendarTitle = document.getElementById('mainCalendarTitle');
-        const miniCalendarTitle = document.getElementById('miniCalendarTitle');
+        const modal = document.getElementById('modal');
+        const formEvento = document.getElementById('form-evento');
         const eventosSeleccionados = document.getElementById('eventosSeleccionados');
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-        let editingEventoId = null;
-
+        // Variables para el estado actual
         const today = new Date();
         let currentMonth = today.getMonth();
         let currentYear = today.getFullYear();
+        let editingEventoId = null;
 
-        const eventos = JSON.parse('{{ eventos|safe }}').map(evento => ({
+        const eventos = JSON.parse('{{ eventos|escapejs }}').map(evento => ({
             ...evento,
-            fecha: new Date(evento.fecha)
+            fecha: new Date(evento.fecha + "T00:00:00")
         }));
 
-        function renderMiniCalendar() {
-            miniCalendarTitle.textContent = `${getMonthName(currentMonth)} ${currentYear}`;
-            miniCalendarDays.innerHTML = '';
+        // Renderizar el calendario principal
+        function renderCalendar() {
+            mainCalendarTitle.textContent = `${getMonthName(currentMonth)} ${currentYear}`;
+            calendarDays.innerHTML = '';
 
             const firstDay = new Date(currentYear, currentMonth, 1).getDay();
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
+            // Crear espacios vacíos antes del primer día del mes
             for (let i = 0; i < firstDay; i++) {
-                miniCalendarDays.innerHTML += '<div></div>';
+                const emptyDiv = document.createElement('div');
+                calendarDays.appendChild(emptyDiv);
             }
 
+            // Crear los días del mes actual
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayElement = document.createElement('div');
-                dayElement.className = "text-center cursor-pointer hover:bg-blue-200 rounded";
-                dayElement.textContent = day;
+                dayElement.classList.add('day-box', 'bg-gray-300', 'p-4', 'shadow-md', 'rounded-lg', 'h-32', 'flex', 'flex-col', 'justify-center', 'items-center', 'hover:bg-gray-400', 'transition');
+                dayElement.innerHTML = `<span class="font-bold text-gray-900">${day}</span>`;
+
+                // Verificar si hay eventos en el día
+                const eventosDelDia = eventos.filter(evento =>
+                    evento.fecha.getDate() === day &&
+                    evento.fecha.getMonth() === currentMonth &&
+                    evento.fecha.getFullYear() === currentYear
+                );
+
+                if (eventosDelDia.length > 0) {
+                    dayElement.classList.add('has-event');
+                }
 
                 dayElement.addEventListener('click', () => {
                     mostrarEventosDelDia(day);
                 });
 
-                miniCalendarDays.appendChild(dayElement);
+                calendarDays.appendChild(dayElement);
             }
         }
 
+        // Obtener el nombre del mes
+        function getMonthName(month) {
+            const monthNames = [
+                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+            ];
+            return monthNames[month];
+        }
+
+        // Mover al mes anterior
+        prevMonthButton.addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar();
+        });
+
+        // Mover al próximo mes
+        nextMonthButton.addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar();
+        });
+
+        // Mostrar los eventos del día seleccionado
         function mostrarEventosDelDia(dia) {
             eventosSeleccionados.innerHTML = '';
             const eventosDelDia = eventos.filter(evento =>
@@ -143,125 +237,65 @@
             );
 
             if (eventosDelDia.length === 0) {
-                eventosSeleccionados.innerHTML = '<p class="text-gray-500">No hay eventos para este día.</p>';
+                eventosSeleccionados.innerHTML = '<p class="text-white">No hay eventos para este día.</p>';
             } else {
                 eventosDelDia.forEach(evento => {
                     const eventoElement = document.createElement('div');
-                    eventoElement.className = 'bg-blue-200 p-2 rounded-lg text-sm flex justify-between items-center';
+                    eventoElement.className = 'event-item bg-blue-200 p-4 rounded-lg text-sm text-gray-800 mb-4';
                     eventoElement.innerHTML = `
-                        <span>${evento.titulo}</span>
-                        <div>
-                            <button data-evento-id="${evento.id}" class="bg-yellow-500 text-white px-2 py-1 rounded edit-event-btn">
-                                Editar
-                            </button>
-                            <button data-evento-id="${evento.id}" class="bg-red-500 text-white px-2 py-1 rounded delete-event-btn">
-                                Eliminar
-                            </button>
+                        <div class="event-details">
+                            <strong>${evento.titulo}</strong>
+                            <p>${evento.descripcion}</p>
+                        </div>
+                        <div class="flex space-x-2 ml-4">
+                            <button class="edit-event-btn bg-yellow-500 text-white px-2 py-1 rounded" data-evento-id="${evento.id}">Editar</button>
+                            <button class="delete-event-btn bg-red-500 text-white px-2 py-1 rounded" data-evento-id="${evento.id}">Eliminar</button>
                         </div>
                     `;
                     eventosSeleccionados.appendChild(eventoElement);
                 });
 
-                // Agregar los manejadores para los botones de eliminar y editar
-                document.querySelectorAll('.delete-event-btn').forEach(button => {
-                    button.addEventListener('click', async (event) => {
-                        const eventoId = event.target.getAttribute('data-evento-id');
-                        try {
-                            const response = await fetch(`/eliminar-evento/${eventoId}/`, {
-                                method: 'DELETE',
-                                headers: {
-                                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                                }
-                            });
-                            const result = await response.json();
-                            if (result.status === 'success') {
-                                location.reload();
-                            } else {
-                                alert('Error: ' + result.message);
-                            }
-                        } catch (error) {
-                            console.error('Error:', error);
-                        }
-                    });
-                });
-
+                // Agregar funcionalidad de editar y eliminar
                 document.querySelectorAll('.edit-event-btn').forEach(button => {
                     button.addEventListener('click', (event) => {
                         const eventoId = event.target.getAttribute('data-evento-id');
                         const evento = eventos.find(e => e.id == eventoId);
                         if (evento) {
-                            formEvento.titulo.value = evento.titulo;
-                            formEvento.descripcion.value = evento.descripcion;
-                            formEvento.fecha.value = evento.fecha.toISOString().substr(0, 10);
-                            abrirModalBtn.click();  // Abrir el modal para editar
-                            editingEventoId = eventoId;  // Guardar el ID del evento en edición
+                            abrirModal('Editar Evento', evento);
+                            editingEventoId = eventoId;
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.delete-event-btn').forEach(button => {
+                    button.addEventListener('click', async (event) => {
+                        const eventoId = event.target.getAttribute('data-evento-id');
+                        if (confirm('¿Estás seguro de que deseas eliminar este evento?')) {
+                            try {
+                                const response = await fetch(`/eliminar-evento/${eventoId}/`, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'X-CSRFToken': csrfToken,
+                                    }
+                                });
+                                const result = await response.json();
+                                if (result.status === 'success') {
+                                    location.reload();
+                                } else {
+                                    alert('Error: ' + result.message);
+                                }
+                            } catch (error) {
+                                console.error('Error:', error);
+                            }
                         }
                     });
                 });
             }
         }
 
-        function renderCalendar() {
-            mainCalendarTitle.textContent = `${getMonthName(currentMonth)} ${currentYear}`;
-            calendarDays.innerHTML = '';
-
-            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-
-            for (let i = 0; i < firstDay; i++) {
-                calendarDays.innerHTML += '<div></div>';
-            }
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const eventosDelDia = eventos.filter(evento =>
-                    evento.fecha.getDate() === day &&
-                    evento.fecha.getMonth() === currentMonth &&
-                    evento.fecha.getFullYear() === currentYear
-                );
-
-                const eventosHtml = eventosDelDia.map(evento => `
-                    <p class="text-sm bg-blue-100 p-2 rounded-md">${evento.titulo}</p>
-                `).join('');
-
-                calendarDays.innerHTML += `
-                    <div class="relative bg-white p-4 shadow-md rounded-lg h-48 flex flex-col">
-                        <span class="absolute top-2 right-2 font-bold">${day}</span>
-                        ${eventosHtml}
-                    </div>`;
-            }
-        }
-
-        function getMonthName(month) {
-            const monthNames = [
-                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-            ];
-            return monthNames[month];
-        }
-
-        document.getElementById('prevMonth').addEventListener('click', () => {
-            currentMonth--;
-            if (currentMonth < 0) {
-                currentMonth = 11;
-                currentYear--;
-            }
-            renderMiniCalendar();
-            renderCalendar();
-        });
-
-        document.getElementById('nextMonth').addEventListener('click', () => {
-            currentMonth++;
-            if (currentMonth > 11) {
-                currentMonth = 0;
-                currentYear++;
-            }
-            renderMiniCalendar();
-            renderCalendar();
-        });
-
+        // Abrir y cerrar modal para añadir/editar eventos
         abrirModalBtn.addEventListener('click', () => {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            abrirModal('Añadir Evento');
         });
 
         cerrarModalBtn.addEventListener('click', () => {
@@ -270,6 +304,25 @@
             editingEventoId = null;
         });
 
+        // Abrir modal con la opción de añadir o editar evento
+        function abrirModal(titulo, evento = null) {
+            document.getElementById('modal-title').textContent = titulo;
+            if (evento) {
+                formEvento.titulo.value = evento.titulo;
+                formEvento.descripcion.value = evento.descripcion;
+                formEvento.fecha.value = evento.fecha.toISOString().substr(0, 10);
+                if (evento.compartido_con) {
+                    Array.from(formEvento.compartido_con.options).forEach(option => {
+                        if (evento.compartido_con.includes(parseInt(option.value))) {
+                            option.selected = true;
+                        }
+                    });
+                }
+            }
+            modal.classList.remove('hidden');
+        }
+
+        // Añadir o editar evento
         formEvento.addEventListener('submit', async (event) => {
             event.preventDefault();
             const formData = new FormData(formEvento);
@@ -280,15 +333,14 @@
 
             if (editingEventoId) {
                 url = `/editar-evento/${editingEventoId}/`;
-                method = 'POST';
             }
 
             try {
                 const response = await fetch(url, {
                     method: method,
                     headers: {
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
                         'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
                     },
                     body: JSON.stringify(data),
                 });
@@ -304,8 +356,9 @@
             }
         });
 
-        renderMiniCalendar();
+        // Inicializar el calendario
         renderCalendar();
     });
 </script>
+
 {% endblock %}
