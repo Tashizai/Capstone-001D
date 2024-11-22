@@ -5,63 +5,61 @@
 
 {% block content %}
 
-<div class="calendar-container flex min-h-screen p-8">
+<div class="calendar-container flex min-h-screen p-8 bg-gradient-to-br from-blue-500 via-teal-400 to-purple-500">
     <!-- Panel de Eventos del Día -->
-    <aside class="event-panel w-1/3 p-8 bg-blue-500 rounded-lg shadow-lg mr-8">
+    <aside class="event-panel w-1/3 p-8 bg-gradient-to-br from-blue-700 to-teal-600 bg-opacity-90 rounded-lg shadow-2xl mr-8 transition-transform transform hover:scale-105">
         <h2 class="text-3xl font-bold mb-6 text-white">Eventos del Día</h2>
-        <div id="eventosSeleccionados" class="space-y-4">
+        <div id="eventosSeleccionados" class="space-y-4 transition-opacity duration-500 ease-in-out">
             <p class="text-white">Seleccione un día para ver sus eventos.</p>
         </div>
     </aside>
 
     <!-- Calendario Principal -->
-    <main class="calendar-main flex-1 bg-blue-500 p-8 rounded-lg shadow-lg">
+    <main class="calendar-main flex-1 bg-gradient-to-br from-teal-600 to-blue-700 bg-opacity-90 p-8 rounded-lg shadow-2xl transition-transform transform hover:scale-105">
         <div class="flex justify-between items-center mb-6">
-            <button id="prevMonth" class="text-2xl font-bold text-white px-2">&#8592;</button>
+            <button id="prevMonth" class="text-2xl font-bold text-white px-3 py-2 bg-gradient-to-r from-blue-400 to-cyan-500 hover:from-blue-500 hover:to-cyan-600 rounded-full shadow-lg transition-transform transform hover:-translate-y-1">
+                &#8592;
+            </button>
             <h1 id="mainCalendarTitle" class="text-4xl font-semibold text-white mx-4"></h1>
-            <button id="nextMonth" class="text-2xl font-bold text-white px-2">&#8594;</button>
-            <button id="abrir-modal" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+            <button id="nextMonth" class="text-2xl font-bold text-white px-3 py-2 bg-gradient-to-r from-blue-400 to-cyan-500 hover:from-blue-500 hover:to-cyan-600 rounded-full shadow-lg transition-transform transform hover:-translate-y-1">
+                &#8594;
+            </button>
+            <button id="abrir-modal" class="ml-4 bg-gradient-to-r from-green-400 to-green-600 text-white px-4 py-2 rounded-lg hover:from-green-500 hover:to-green-700 shadow-xl transition-transform transform hover:scale-110">
                 + Añadir Evento
             </button>
         </div>
-        <div id="calendarDays" class="grid grid-cols-7 gap-4 text-center"></div>
+        <div id="calendarDays" class="grid grid-cols-7 gap-4 text-center">
+            <!-- Días del calendario se renderizan dinámicamente aquí -->
+        </div>
     </main>
 </div>
 
 <!-- Modal Añadir/Editar Evento -->
-<div id="modal"
-    class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center flex transition-opacity duration-300 ease-in-out">
+<div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center flex transition-opacity duration-300 ease-in-out">
     <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md mx-auto">
         <h2 class="text-xl font-semibold mb-4" id="modal-title">Añadir Evento</h2>
         <form id="form-evento">
             {% csrf_token %}
             <div class="mb-4">
-                <input type="text" name="titulo" id="titulo" placeholder="Título del Evento"
-                    class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <input type="text" name="titulo" id="titulo" placeholder="Título del Evento" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
             </div>
             <div class="mb-4">
-                <textarea name="descripcion" id="descripcion" placeholder="Descripción"
-                    class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows="4"></textarea>
+                <textarea name="descripcion" id="descripcion" placeholder="Descripción" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows="4"></textarea>
             </div>
             <div class="mb-4">
-                <input type="date" name="fecha" id="fecha"
-                    class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <input type="date" name="fecha" id="fecha" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
             </div>
             <div class="mb-4">
                 <label for="compartido_con" class="block mb-2">Compartir con:</label>
-                <select name="compartido_con" id="compartido_con" multiple
-                    class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select name="compartido_con" id="compartido_con" multiple class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                     {% for colega in colegas %}
                     <option value="{{ colega.id_usuario }}">{{ colega.nombre }} {{ colega.apellido }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="flex justify-end space-x-4">
-                <button type="button" id="cerrar-modal"
-                    class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">Cancelar</button>
-                <button type="submit"
-                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">Guardar</button>
+                <button type="button" id="cerrar-modal" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">Cancelar</button>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">Guardar</button>
             </div>
         </form>
     </div>
@@ -90,47 +88,37 @@
 
     #calendarDays > div {
         padding: 1rem;
-        background: #eeeeee;
+        background: #ffffff; /* Fondo blanco para mejor contraste */
+        border: 2px solid #00c6ff; /* Borde en cian para destacar */
         border-radius: 1rem;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        justify-content: center;
         cursor: pointer;
+        transition: all 0.3s ease-in-out;
+        position: relative;
     }
 
-    #calendarDays > div.has-event {
-        background: #ffe4e6;
-        /* Rosado pastel */
+    #calendarDays > div.has-event::before {
+        content: '•';
+        color: #ff4081; /* Color para indicar evento */
+        font-size: 1.5rem;
+        position: absolute;
+        top: 5%;
+        right: 5%;
+        transform: translate(-50%, -50%);
     }
 
     #calendarDays > div:hover {
-        background: #f0f4ff;
-        transform: scale(1.03);
-        transition: all 0.3s ease;
+        background: #e0f7fa; /* Fondo azul más claro al hacer hover */
+        transform: scale(1.05) translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     }
 
     #calendarDays > div span {
         font-weight: bold;
         font-size: 1.5rem;
-    }
-
-    #calendarDays > div p {
-        margin: 0.25rem 0;
-    }
-
-    #modal {
-        align-items: center;
-    }
-
-    .event-panel .event-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .event-panel .event-item .event-details {
-        flex-grow: 1;
     }
 </style>
 
@@ -241,7 +229,7 @@
             } else {
                 eventosDelDia.forEach(evento => {
                     const eventoElement = document.createElement('div');
-                    eventoElement.className = 'event-item bg-blue-200 p-4 rounded-lg text-sm text-gray-800 mb-4';
+                    eventoElement.className = 'vent-item bg-blue-200 p-4 rounded-lg text-sm text-gray-800 mb-4';
                     eventoElement.innerHTML = `
                         <div class="event-details">
                             <strong>${evento.titulo}</strong>

@@ -143,18 +143,31 @@ def agregar_horario(request):
         asignatura = request.POST.get('asignatura')
 
         try:
+            # Depuración para verificar los datos recibidos
+            print(f"Usuario ID: {usuario_id}, Curso ID: {curso_id}, Día: {dia_semana}, Bloque: {bloque}, Asignatura: {asignatura}")
+
+            # Obtener los objetos del usuario y curso
             usuario = Usuarios.objects.get(id_usuario=usuario_id)
             curso = Curso.objects.get(id=curso_id)
 
-            HorarioBase.objects.create(
+            # Crear el objeto de horario
+            horario = HorarioBase.objects.create(
                 usuario=usuario,
                 curso=curso,
                 dia_semana=dia_semana,
                 bloque=bloque,
                 asignatura=asignatura
             )
+
+            # Retornar respuesta de éxito
             return JsonResponse({'status': 'success', 'message': 'Horario añadido correctamente.'})
+        except Usuarios.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Usuario no encontrado.'}, status=404)
+        except Curso.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Curso no encontrado.'}, status=404)
         except Exception as e:
+            # Imprimir el error exacto para depurar
+            print(f"Error al agregar horario: {str(e)}")
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
@@ -212,7 +225,7 @@ def editar_horario(request):
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
 
-@login_required
+
 def calendario(request):
     today = date.today()
 

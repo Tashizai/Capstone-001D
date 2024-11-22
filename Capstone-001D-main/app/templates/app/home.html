@@ -28,17 +28,36 @@
 
     {% if user.is_staff %}
     <!-- Lista de Usuarios con Búsqueda (Solo para Administradores) -->
-    <div class="w-full bg-white bg-opacity-70 shadow-md rounded-lg p-6 mt-10 z-10 max-w-4xl">
-        <h2 class="text-2xl font-semibold mb-4 text-gray-800 text-center">Lista de Usuarios</h2>
-        <div class="space-y-4">
-            <input type="text" id="buscar-usuario" placeholder="Buscar Usuario"
-                class="w-full p-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <div id="lista-usuarios" class="overflow-y-auto h-72 bg-gray-100 rounded-lg p-4 shadow-lg space-y-3">
+    <div class="w-full bg-gradient-to-r from-blue-100 via-blue-300 to-blue-100 shadow-xl rounded-lg p-8 mt-10 z-10 max-w-4xl mx-auto">
+        <h2 class="text-3xl font-bold mb-6 text-gray-800 text-center">Lista de Usuarios</h2>
+        <div class="space-y-6">
+            <!-- Campo de Búsqueda con ícono -->
+            <div class="relative">
+                <input type="text" id="buscar-usuario" placeholder="Buscar Usuario"
+                    class="w-full p-4 rounded-lg border focus:outline-none focus:ring-4 focus:ring-cyan-500 shadow-md pl-12 bg-blue-50 text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                    class="absolute left-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-500" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 16l-2.122-2.122m0 0A5 5 0 119 11.878M6.878 13.878L4 16M21 21l-6-6" />
+                </svg>
+            </div>
+            <!-- Lista de Usuarios -->
+            <div id="lista-usuarios" class="overflow-y-auto h-80 bg-blue-50 rounded-lg p-6 shadow-md space-y-4">
                 {% for usuario in usuarios %}
                 {% if usuario.id_usuario %}
                 <a href="{% url 'ver_horario' usuario.id_usuario %}"
-                    class="block bg-white shadow-md p-3 rounded-lg hover:bg-gray-200 transition">
-                    {{ usuario.nombre }} {{ usuario.apellido }} - {{ usuario.rol }}
+                    class="flex items-center p-4 bg-blue-50 shadow-md rounded-lg transition transform hover:-translate-y-1 hover:shadow-lg hover:bg-blue-100">
+                    <div
+                        class="flex-shrink-0 h-12 w-12 bg-cyan-500 rounded-full flex items-center justify-center text-white font-bold">
+                        {{ usuario.nombre|slice:":1" }}{{ usuario.apellido|slice:":1" }}
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-800">{{ usuario.nombre }} {{ usuario.apellido }}</h3>
+                        <p class="text-sm {% if usuario.rol == 'Administrador' %}text-cyan-600{% elif usuario.rol == 'Profesor' %}text-blue-600{% else %}text-purple-600{% endif %}">
+                            {{ usuario.rol }}
+                        </p>
+                    </div>
                 </a>
                 {% endif %}
                 {% empty %}
@@ -47,7 +66,7 @@
             </div>
         </div>
     </div>
-    {% endif %}
+{% endif %}
 
     <!-- Burbujas -->
     <div class="bubbles-container absolute inset-0 overflow-hidden -z-10">
