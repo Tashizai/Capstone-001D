@@ -11,7 +11,7 @@
 
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 min-h-screen flex flex-col">
+<body class="bg-gradient-to-br from-blue-500 via-teal-400 to-purple-500 bg-opacity-90 min-h-screen flex flex-col">
 
     <!-- Navbar con Funciones Exclusivas para Administradores -->
     <nav class="bg-gradient-to-r from-blue-800 to-cyan-600 text-white py-4 px-8 shadow-md flex justify-between items-center">
@@ -70,7 +70,7 @@
     </nav>
 
     <!-- Contenido principal -->
-    <main class="flex-1 h-full w-full py-0 px-0">
+    <main class="flex-1 py-0 px-0">
         {% block content %}{% endblock %}
     </main>
 

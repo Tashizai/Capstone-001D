@@ -6,7 +6,7 @@
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
         <div class="flex space-x-4">
             {% if user.is_staff %}
-            <button id="openModal" class="bg-gradient-to-r from-blue-500 to-blue-700 text-white py-2 px-6 rounded-full shadow-md hover:from-blue-600 hover:to-blue-800 transition transform hover:scale-105">
+            <button id="openModal" class="bg-gradient-to-r from-green-400 to-green-600 text-white py-2 px-6 rounded-full shadow-lg hover:bg-cyan-500 hover:shadow-xl transition transform hover:scale-105">
                 Crear Anuncio
             </button>
             {% endif %}
@@ -14,19 +14,19 @@
     </div>
 
     <!-- Contenedor Principal de Anuncios -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white shadow-lg rounded-lg p-4 h-[600px] md:h-[600px] overflow-hidden">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gradient-blue p-6 rounded-lg shadow-2xl h-[600px] md:h-[600px] overflow-hidden">
         <!-- Sidebar con Anuncios -->
-        <div class="sidebar col-span-1 p-4 bg-gray-100 border-r border-gray-300 overflow-y-auto rounded-lg shadow-sm h-full">
-            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Anuncios</h2>
-            <div class="anuncios-list space-y-4">
+        <div class="sidebar col-span-1 p-6 bg-white bg-opacity-80 shadow-md border-r-2 border-blue-500 overflow-y-auto h-full">
+            <h2 class="text-2xl font-bold text-pink-800 mb-6">Anuncios</h2>
+            <div class="anuncios-list space-y-6 bg-opacity-60">
                 {% for anuncio in anuncios %}
-                <div class="anuncio-item p-4 bg-white border border-gray-300 rounded-lg shadow-md hover:shadow-lg transition relative flex justify-between items-center">
+                <div class="anuncio-item p-4  rounded-lg shadow-md transition-transform transform hover:scale-105 hover:shadow-lg relative">
                     <div onclick="mostrarAnuncio('{{ anuncio.id }}')" class="cursor-pointer w-full">
-                        <h3 class="font-bold text-xl text-blue-600">{{ anuncio.titulo }}</h3>
-                        <p class="text-gray-600">{{ anuncio.descripcion|truncatechars:50 }}</p>
+                        <h3 class="font-bold text-lg text-black">{{ anuncio.titulo }}</h3>
+                        <p class="text-black-100 text-sm">{{ anuncio.descripcion|truncatechars:50 }}</p>
                     </div>
                     {% if user.is_staff %}
-                    <button onclick="eliminarAnuncioModal('{{ anuncio.id }}')" class="delete-icon bg-transparent hover:bg-red-500 text-red-500 hover:text-white rounded-full p-2 transition">
+                    <button onclick="eliminarAnuncioModal('{{ anuncio.id }}')" class="delete-icon bg-transparent hover:bg-red-500 text-red-600 hover:text-white rounded-full p-2 transition absolute top-2 right-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -38,15 +38,15 @@
         </div>
 
         <!-- Detalle del Anuncio Seleccionado -->
-        <div class="contenido-anuncio col-span-2 p-4 bg-white border border-gray-300 rounded-lg shadow-md h-full overflow-auto">
-            <h2 class="text-3xl font-bold mb-4 text-blue-700">
+        <div class="contenido-anuncio col-span-2 p-6 bg-white bg-opacity-80 rounded-lg shadow-md h-full overflow-auto">
+            <h2 class="text-3xl font-bold mb-4 text-blue-900">
                 {% if ultimo_anuncio %}
                     {{ ultimo_anuncio.titulo }}
                 {% else %}
                     Sin anuncios disponibles
                 {% endif %}
             </h2>
-            <p class="text-lg text-gray-700 mb-2 font-semibold">
+            <p class="text-lg text-gray-800 mb-2 font-semibold">
                 {% if ultimo_anuncio %}
                     {{ ultimo_anuncio.autor.nombre }} {{ ultimo_anuncio.autor.apellido }}
                 {% else %}
@@ -60,7 +60,7 @@
                     ---
                 {% endif %}
             </p>
-            <p class="text-gray-700 leading-relaxed">
+            <p class="text-gray-800 leading-relaxed">
                 {% if ultimo_anuncio %}
                     {{ ultimo_anuncio.descripcion }}
                 {% else %}
@@ -72,44 +72,44 @@
 </div>
 
 <!-- Modal Crear Anuncio -->
-<div id="crearAnuncioModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden">
-    <div class="bg-white p-4 rounded-lg shadow-lg w-full max-w-lg mx-4">
-        <h2 class="text-2xl font-bold mb-4">Crear Anuncio</h2>
+<div id="crearAnuncioModal" class="fixed inset-0 bg-gray-800 bg-opacity-60 flex items-center justify-center hidden">
+    <div class="bg-white p-8 rounded-lg shadow-2xl w-full max-w-lg mx-4">
+        <h2 class="text-3xl font-bold mb-6 text-blue-800">Crear Anuncio</h2>
         <form id="crearAnuncioForm">
             {% csrf_token %}
-            <div class="mb-4">
-                <label for="titulo" class="block text-gray-700 font-semibold mb-2">Asunto</label>
-                <input type="text" id="titulo" name="titulo" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            <div class="mb-6">
+                <label for="titulo" class="block text-gray-800 font-semibold mb-2">Asunto</label>
+                <input type="text" id="titulo" name="titulo" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" required>
             </div>
-            <div class="mb-4">
-                <label for="descripcion" class="block text-gray-700 font-semibold mb-2">Descripción</label>
-                <textarea id="descripcion" name="descripcion" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows="4" required></textarea>
+            <div class="mb-6">
+                <label for="descripcion" class="block text-gray-800 font-semibold mb-2">Descripción</label>
+                <textarea id="descripcion" name="descripcion" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" rows="4" required></textarea>
             </div>
-            <div class="mb-4">
-                <label for="grupo" class="block text-gray-700 font-semibold mb-2">Dirigido a</label>
-                <select id="grupo" name="grupo" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            <div class="mb-6">
+                <label for="grupo" class="block text-gray-800 font-semibold mb-2">Dirigido a</label>
+                <select id="grupo" name="grupo" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500" required>
                     <option value="Todos">Todos</option>
                     <option value="Directivos">Directivos</option>
                     <option value="Profesores">Profesores</option>
                     <option value="Asistentes">Asistentes</option>
                 </select>
             </div>
-            <div class="flex justify-end">
-                <button type="button" id="closeModal" class="bg-gray-500 text-white py-2 px-6 rounded-lg hover:bg-gray-600 transition mr-2">Cancelar</button>
-                <button type="submit" class="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 transition">Guardar</button>
+            <div class="flex justify-end space-x-4">
+                <button type="button" id="closeModal" class="bg-gray-500 text-white py-2 px-6 rounded-lg hover:bg-gray-600 transition">Cancelar</button>
+                <button type="submit" class="bg-green-600 text-white py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition">Guardar</button>
             </div>
         </form>
     </div>
 </div>
 
 <!-- Modal Eliminar Anuncio -->
-<div id="eliminarAnuncioModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden">
-    <div class="bg-white p-4 rounded-lg shadow-lg w-full max-w-lg mx-4">
-        <h2 class="text-2xl font-bold mb-4 text-red-600">Eliminar Anuncio</h2>
-        <p class="text-gray-700 mb-6">¿Estás seguro de que deseas eliminar este anuncio?</p>
-        <div class="flex justify-end space-x-4">
-            <button type="button" id="cancelarEliminar" class="bg-gray-500 text-white py-2 px-6 rounded-full hover:bg-gray-600 transition transform hover:scale-105">Cancelar</button>
-            <button type="button" id="confirmarEliminar" class="bg-red-500 text-white py-2 px-6 rounded-full hover:bg-red-600 transition">Eliminar</button>
+<div id="eliminarAnuncioModal" class="fixed inset-0 bg-gray-800 bg-opacity-60 flex items-center justify-center hidden">
+    <div class="bg-white p-8 rounded-lg shadow-2xl w-full max-w-lg mx-4">
+        <h2 class="text-3xl font-bold mb-4 text-red-600">Eliminar Anuncio</h2>
+        <p class="text-gray-800 mb-6">¿Estás seguro de que deseas eliminar este anuncio?</p>
+        <div class="flex justify-end space-x-6">
+            <button type="button" id="cancelarEliminar" class="bg-gray-500 text-white py-2 px-6 rounded-lg hover:bg-gray-600 transition">Cancelar</button>
+            <button type="button" id="confirmarEliminar" class="bg-red-500 text-white py-2 px-6 rounded-lg hover:bg-red-600 transition">Eliminar</button>
         </div>
     </div>
 </div>
@@ -210,18 +210,6 @@
             return cookieValue;
         }
     });
-
-    function mostrarAnuncio(anuncioId) {
-        const anuncios = JSON.parse('{{ anuncios_json|safe }}'.replace(/&quot;/g, '"'));
-        const anuncio = anuncios.find(anuncio => anuncio.id == anuncioId);
-        
-        if (anuncio) {
-            document.querySelector('.anuncio-detalle h2').innerText = anuncio.titulo;
-            document.querySelector('.anuncio-detalle p:nth-of-type(1)').innerText = anuncio.autor__nombre ? anuncio.autor__nombre : 'Autor desconocido';
-            document.querySelector('.anuncio-detalle p:nth-of-type(2)').innerText = 'Para: ' + (anuncio.grupo_destinatario ? anuncio.grupo_destinatario : 'Grupo no especificado');
-            document.querySelector('.anuncio-detalle p:nth-of-type(3)').innerText = anuncio.descripcion ? anuncio.descripcion : 'Sin descripción';
-        }
-    }
 </script>
 
 {% endblock %}
