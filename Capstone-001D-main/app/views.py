@@ -5,18 +5,19 @@ from django.contrib.auth.models import Group
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.decorators import login_required
-from .models import Usuarios, HorarioBase, HorarioExcepcional, Curso, Evento
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import Usuarios, HorarioBase, HorarioExcepcional, Curso, Evento, Reunion
 import json
 from django.utils.timezone import now
-import calendar
 from datetime import date
 from .models import Anuncio
-from .forms import AnuncioForm
 from .models import Carpeta, Archivo
 from django.utils import timezone
 from django.http import FileResponse, Http404
 from django.http import HttpResponseForbidden
+from django.utils.dateparse import parse_datetime
+from django.contrib import messages
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 def login_view(request):
@@ -29,63 +30,22 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
-
-            # Redirigir según el tipo de usuario
-            if user.is_superuser or user.is_staff:  # Vista del admin
-                return redirect('admin_home')
-            else:  # Vista del usuario regular
-                return redirect('home')
+            # Redirigir a la vista común para todos los usuarios
+            return redirect('home')
         else:
             return HttpResponse("Credenciales incorrectas. Inténtalo de nuevo.")
 
     return render(request, 'app/login.html')
 
-@login_required
-def home_view(request):
-    # Obtener el usuario logueado
-    usuario = get_object_or_404(Usuarios, id_usuario=request.user.id_usuario)
-
-    # Días de la semana y bloques de horarios
-    dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']
-    bloques = [
-        "08:30 - 10:00 Primer bloque",
-        "10:00 - 10:20 Recreo",
-        "10:20 - 11:50 Segundo bloque",
-        "11:50 - 12:10 Recreo",
-        "12:10 - 13:40 Tercer bloque",
-        "13:40 - 14:25 Almuerzo",
-        "14:25 - 15:55 Último Bloque"
-    ]
-
-    # Crear una lista para almacenar los horarios de cada bloque y día
-    horario_lista = []
-
-    # Recorrer cada bloque y obtener la información para cada día
-    for bloque in bloques:
-        fila = [bloque]
-        for dia in dias:
-            asignacion = HorarioBase.objects.filter(usuario=usuario, dia_semana=dia.upper(), bloque=bloque).first()
-            fila.append(asignacion)
-        horario_lista.append(fila)
-
-    context = {
-        'usuario': usuario,
-        'horario_lista': horario_lista,
-        'dias': dias,
-        'anuncios': [],  # Añade tus anuncios si tienes alguno
-        'archivos': []   # Añade tus archivos si tienes alguno
-    }
-
-    return render(request, 'app/home.html', context)
 
 @login_required
-def admin_home_view(request):
+def home(request):
     usuarios = Usuarios.objects.all()  # Obtener todos los usuarios
 
     context = {
         'usuarios': usuarios
     }
-    return render(request, 'app/admin-home.html', context)
+    return render(request, 'app/home.html', context)
 
 def logout_view(request):
     # Cerrar sesión y redirigir al login
@@ -185,18 +145,31 @@ def agregar_horario(request):
         asignatura = request.POST.get('asignatura')
 
         try:
+            # Depuración para verificar los datos recibidos
+            print(f"Usuario ID: {usuario_id}, Curso ID: {curso_id}, Día: {dia_semana}, Bloque: {bloque}, Asignatura: {asignatura}")
+
+            # Obtener los objetos del usuario y curso
             usuario = Usuarios.objects.get(id_usuario=usuario_id)
             curso = Curso.objects.get(id=curso_id)
 
-            HorarioBase.objects.create(
+            # Crear el objeto de horario
+            horario = HorarioBase.objects.create(
                 usuario=usuario,
                 curso=curso,
                 dia_semana=dia_semana,
                 bloque=bloque,
                 asignatura=asignatura
             )
+
+            # Retornar respuesta de éxito
             return JsonResponse({'status': 'success', 'message': 'Horario añadido correctamente.'})
+        except Usuarios.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Usuario no encontrado.'}, status=404)
+        except Curso.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Curso no encontrado.'}, status=404)
         except Exception as e:
+            # Imprimir el error exacto para depurar
+            print(f"Error al agregar horario: {str(e)}")
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
@@ -254,14 +227,14 @@ def editar_horario(request):
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
 
-@login_required
+
 def calendario(request):
     today = date.today()
 
     # Filtrar eventos creados por el usuario o compartidos con el usuario autenticado
     if request.user.is_staff:
-        # Si es admin, ve todos los eventos (propios y compartidos)
-        eventos = Evento.objects.filter(creador=request.user) | Evento.objects.filter(compartido_con=request.user)
+        # Si es admin, ve todos los eventos (propios y compartidos por otros)
+        eventos = Evento.objects.all()
     else:
         # Si es usuario normal, solo ve sus eventos o eventos compartidos con él
         eventos = Evento.objects.filter(creador=request.user) | Evento.objects.filter(compartido_con=request.user)
@@ -289,13 +262,13 @@ def calendario(request):
     _, dias_en_mes = calendar.monthrange(current_year, current_month)
 
     context = {
-    'eventos': json.dumps(eventos_list),  # Convertimos los eventos a JSON
-    'colegas': colegas,
-    'today': today,
-    'current_month': current_month,
-    'current_year': current_year,
-    'dias_del_mes': range(1, dias_en_mes + 1),
-    'es_admin': request.user.is_staff  # Añadir esta bandera al contexto para identificar si es admin
+        'eventos': json.dumps(eventos_list),  # Convertimos los eventos a JSON
+        'colegas': colegas,
+        'today': today,
+        'current_month': current_month,
+        'current_year': current_year,
+        'dias_del_mes': range(1, dias_en_mes + 1),
+        'es_admin': request.user.is_staff  # Añadir esta bandera al contexto para identificar si es admin
     }
 
     return render(request, 'app/calendario.html', context)
@@ -303,13 +276,14 @@ def calendario(request):
 @login_required
 def agregar_evento(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        titulo = data.get('titulo')
-        descripcion = data.get('descripcion')
-        fecha = data.get('fecha')
-        compartido_ids = data.get('compartido_con', [])
-
         try:
+            data = json.loads(request.body)
+            titulo = data.get('titulo')
+            descripcion = data.get('descripcion')
+            fecha = data.get('fecha')
+            compartido_ids = data.get('compartido_con', [])
+
+            # Crear el evento
             evento = Evento.objects.create(
                 titulo=titulo,
                 descripcion=descripcion,
@@ -317,95 +291,63 @@ def agregar_evento(request):
                 creador=request.user
             )
 
+            # Si hay usuarios con quienes compartir el evento, añadirlos
             if compartido_ids:
                 usuarios = Usuarios.objects.filter(id_usuario__in=compartido_ids)
                 evento.compartido_con.set(usuarios)
 
             return JsonResponse({'status': 'success', 'message': 'Evento añadido correctamente.'})
+
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
-
 
 @login_required
 def eliminar_evento(request, evento_id):
     if request.method == 'DELETE':
         try:
-            evento = get_object_or_404(Evento, id=evento_id, creador=request.user)
-            evento.delete()
-            return JsonResponse({'status': 'success', 'message': 'Evento eliminado correctamente.'})
+            # Solo el creador del evento o el administrador puede eliminar un evento
+            evento = get_object_or_404(Evento, id=evento_id)
+            if request.user.is_staff or evento.creador == request.user:
+                evento.delete()
+                return JsonResponse({'status': 'success', 'message': 'Evento eliminado correctamente.'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'No tienes permiso para eliminar este evento.'}, status=403)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
-
 
 @login_required
 def editar_evento(request, evento_id):
     if request.method == 'POST':
         try:
-            evento = get_object_or_404(Evento, id=evento_id, creador=request.user)
-            data = json.loads(request.body)
+            evento = get_object_or_404(Evento, id=evento_id)
+            # Solo el creador del evento o el administrador puede editar un evento
+            if request.user.is_staff or evento.creador == request.user:
+                data = json.loads(request.body)
 
-            evento.titulo = data.get('titulo', evento.titulo)
-            evento.descripcion = data.get('descripcion', evento.descripcion)
-            evento.fecha = data.get('fecha', evento.fecha)
+                evento.titulo = data.get('titulo', evento.titulo)
+                evento.descripcion = data.get('descripcion', evento.descripcion)
+                evento.fecha = data.get('fecha', evento.fecha)
 
-            compartido_ids = data.get('compartido_con', [])
-            if compartido_ids:
-                usuarios = Usuarios.objects.filter(id_usuario__in=compartido_ids)
-                evento.compartido_con.set(usuarios)
+                compartido_ids = data.get('compartido_con', [])
+                if compartido_ids:
+                    usuarios = Usuarios.objects.filter(id_usuario__in=compartido_ids)
+                    evento.compartido_con.set(usuarios)
 
-            evento.save()
+                evento.save()
 
-            return JsonResponse({'status': 'success', 'message': 'Evento editado correctamente.'})
+                return JsonResponse({'status': 'success', 'message': 'Evento editado correctamente.'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'No tienes permiso para editar este evento.'}, status=403)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
 
-
-def ver_horario_usuario_cualquiera(request, usuario_id):
-    usuario = get_object_or_404(Usuarios, id_usuario=usuario_id)
-    cursos = Curso.objects.all()
-
-    # Días de la semana y bloques predeterminados
-    dias = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES']
-    bloques = [
-        "08:30 - 10:00 Primer bloque",
-        "10:00 - 10:20 Recreo",
-        "10:20 - 11:50 Segundo bloque",
-        "11:50 - 12:10 Recreo",
-        "12:10 - 13:40 Tercer bloque",
-        "13:40 - 14:25 Almuerzo",
-        "14:25 - 15:55 Ultimo Bloque"
-    ]
-
-    # Crear un diccionario con los horarios por (día, bloque)
-    horarios = HorarioBase.objects.filter(usuario=usuario)
-    horarios_dict = {(h.dia_semana, h.bloque): h for h in horarios}
-
-    # Preparar los datos para el template
-    horario_lista = []
-    for bloque in bloques:
-        fila = {
-            'bloque': bloque,
-            'datos': [horarios_dict.get((dia, bloque), None) for dia in dias]
-        }
-        horario_lista.append(fila)
-
-    context = {
-        'usuario': usuario,
-        'cursos': cursos,
-        'dias': dias,
-        'bloques': bloques,  # Aseguramos que los bloques estén disponibles en el template
-        'horario_lista': horario_lista,
-    }
-
-    return render(request, 'app/horario_user.html', context)
-
-
+@login_required
 def lista_anuncios(request):
     anuncios = Anuncio.objects.all().order_by('-fecha_creacion')
     ultimo_anuncio = anuncios.first()  # Obtener el último anuncio creado si existe
@@ -418,22 +360,17 @@ def lista_anuncios(request):
 
 
 @csrf_exempt
+@login_required
 def crear_anuncio(request):
     if request.method == 'POST':
         data = json.loads(request.body)
-        titulo = data.get('titulo')
-        descripcion = data.get('descripcion')
-        grupo_destinatario = data.get('grupo')
-        
-        # Crear el anuncio
         anuncio = Anuncio.objects.create(
-            titulo=titulo,
-            descripcion=descripcion,
-            grupo_destinatario=grupo_destinatario,
+            titulo=data['titulo'],
+            descripcion=data['descripcion'],
+            grupo_destinatario=data['grupo'],
             autor=request.user
         )
         return JsonResponse({'message': 'Anuncio creado correctamente'}, status=201)
-
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 
@@ -448,7 +385,6 @@ def eliminar_anuncio(request, anuncio_id):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
-
 
 
 @login_required
@@ -568,6 +504,20 @@ def ver_carpeta(request, carpeta_id):
     }
     return render(request, 'app/ver_carpeta.html', context)
 
+@csrf_exempt
+@login_required
+def eliminar_carpeta(request, carpeta_id):
+    if request.method == 'DELETE':
+        try:
+            carpeta = Carpeta.objects.get(id=carpeta_id, usuario=request.user)
+            carpeta.delete()
+            return JsonResponse({'status': 'success', 'message': 'Carpeta eliminada correctamente.'})
+        except Carpeta.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'La carpeta no existe o no tienes permisos para eliminarla.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
+
 
 @login_required
 def eliminar_archivo(request, archivo_id):
@@ -654,3 +604,189 @@ def ver_compartidos(request):
     }
 
     return render(request, 'app/ver_compartidos.html', context)
+
+
+
+@login_required
+def ver_reuniones(request):
+    usuario_actual = request.user
+    ahora = timezone.now()
+
+    es_administrador = usuario_actual.is_staff or usuario_actual.is_superuser
+
+    # Obtener reuniones próximas
+    if es_administrador:
+        reuniones_proximas = Reunion.objects.filter(fecha__gte=ahora).select_related('creador')
+    else:
+        reuniones_proximas = Reunion.objects.filter(
+            fecha__gte=ahora, destinatarios=usuario_actual.rol
+        ).select_related('creador')
+
+    # Obtener reuniones pasadas
+    if es_administrador:
+        reuniones_pasadas = Reunion.objects.filter(fecha__lt=ahora).select_related('creador')
+    else:
+        reuniones_pasadas = Reunion.objects.filter(
+            fecha__lt=ahora, destinatarios=usuario_actual.rol
+        ).select_related('creador')
+
+    # Parámetros de filtro y búsqueda
+    search_query = request.GET.get('search', '').lower()
+    destinatarios_filter = request.GET.get('filter', '')
+
+    # Aplicar filtros
+    if search_query:
+        reuniones_pasadas = reuniones_pasadas.filter(titulo__icontains=search_query)
+    if destinatarios_filter:
+        reuniones_pasadas = reuniones_pasadas.filter(destinatarios=destinatarios_filter)
+
+    # Paginación para reuniones pasadas
+    paginator = Paginator(reuniones_pasadas.order_by('-fecha'), 5)
+    page_number = request.GET.get('page')
+    try:
+        reuniones_pasadas_paginadas = paginator.page(page_number)
+    except PageNotAnInteger:
+        reuniones_pasadas_paginadas = paginator.page(1)
+    except EmptyPage:
+        reuniones_pasadas_paginadas = paginator.page(paginator.num_pages)
+
+    context = {
+        'reuniones_proximas': reuniones_proximas,
+        'reuniones_pasadas': reuniones_pasadas_paginadas,
+        'es_administrador': es_administrador,
+    }
+
+    return render(request, 'app/reuniones.html', context)
+
+
+
+@csrf_exempt
+@login_required
+def crear_reunion(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            titulo = data.get('titulo')
+            descripcion = data.get('descripcion')
+            fecha = data.get('fecha')
+            destinatarios = data.get('destinatarios')
+            creador = request.user  # Obtener el usuario actual como creador
+
+            if not titulo or not fecha or not destinatarios or not descripcion:
+                return JsonResponse({'status': 'error', 'message': 'Todos los campos son obligatorios.'}, status=400)
+
+            nueva_reunion = Reunion.objects.create(
+                titulo=titulo,
+                descripcion=descripcion,
+                fecha=fecha,
+                destinatarios=destinatarios,
+                creador=creador
+            )
+
+            return JsonResponse({'status': 'success', 'message': 'Reunión creada exitosamente.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
+
+@login_required
+def ver_reunion(request, reunion_id):
+    reunion = get_object_or_404(Reunion, id=reunion_id)
+
+    context = {
+        'reunion': reunion
+    }
+
+    return render(request, 'app/ver_reunion.html', context)
+
+
+def es_administrador_o_directivo(user):
+    return user.is_staff or user.rol == 'Directivo'
+
+@user_passes_test(es_administrador_o_directivo)
+@login_required
+def crear_usuario(request):
+    if request.method == 'POST':
+        # Obtener los datos del formulario
+        nombre = request.POST.get('nombre').strip()
+        apellido = request.POST.get('apellido').strip()
+        run = request.POST.get('run').strip()
+        email = request.POST.get('email').strip()
+        password = request.POST.get('password').strip()
+        rol = request.POST.get('rol')
+
+        # Validar los datos
+        if not (nombre and apellido and run and password and rol):
+            messages.error(request, 'Todos los campos son obligatorios.')
+            return render(request, 'app/crear_usuario.html')
+
+        if Usuarios.objects.filter(run=run).exists():
+            messages.error(request, 'El RUT ingresado ya está registrado.')
+            return render(request, 'app/crear_usuario.html')
+
+        if email and Usuarios.objects.filter(email=email).exists():
+            messages.error(request, 'El correo ingresado ya está registrado.')
+            return render(request, 'app/crear_usuario.html')
+
+        # Configurar `is_staff` si el rol es 'Directivo'
+        es_staff = True if rol == 'Directivo' else False
+
+        # Crear el usuario
+        usuario = Usuarios.objects.create(
+            nombre=nombre,
+            apellido=apellido,
+            run=run,
+            email=email,
+            rol=rol,
+            is_staff=es_staff  # Definir si el usuario es staff
+        )
+        usuario.set_password(password)
+        usuario.save()
+
+        messages.success(request, 'Usuario creado exitosamente.')
+        return redirect('listado_usuarios')
+
+    # Si es un GET o algún otro método, renderiza el formulario
+    return render(request, 'app/crear_usuario.html')
+
+
+@login_required
+@user_passes_test(es_administrador_o_directivo)
+def listado_usuarios(request):
+    # Si hay una búsqueda, filtrar por RUT
+    query = request.GET.get('q')
+    if query:
+        usuarios = Usuarios.objects.filter(run__icontains=query)
+    else:
+        usuarios = Usuarios.objects.all()
+
+    context = {
+        'usuarios': usuarios,
+    }
+    return render(request, 'app/listado_usuarios.html', context)
+
+
+@login_required
+@user_passes_test(es_administrador_o_directivo)
+def ver_perfil_usuario(request, id_usuario):
+    # Obtener el usuario a partir del ID
+    usuario = get_object_or_404(Usuarios, id_usuario=id_usuario)
+
+    if request.method == 'POST':
+        # Editar la información del usuario
+        usuario.nombre = request.POST.get('nombre', usuario.nombre)
+        usuario.apellido = request.POST.get('apellido', usuario.apellido)
+        usuario.email = request.POST.get('email', usuario.email)
+        usuario.run = request.POST.get('run', usuario.run)
+        usuario.rol = request.POST.get('rol', usuario.rol)
+        password = request.POST.get('password', None)
+        if password:
+            usuario.set_password(password)
+        
+        usuario.save()
+        messages.success(request, 'Información actualizada exitosamente.')
+
+    context = {
+        'usuario': usuario,
+    }
+    return render(request, 'app/ver_perfil_usuario.html', context)

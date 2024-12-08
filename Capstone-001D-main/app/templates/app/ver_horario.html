@@ -2,203 +2,237 @@
 {% load static %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-10">
-    <!-- Mensaje de Éxito o Error -->
-    <div id="mensaje-estado" class="fixed top-5 right-5 hidden p-4 rounded-md shadow-lg text-white"></div>
-
-    <!-- Perfil del Usuario -->
-    <div class="flex items-center space-x-6 mb-8">
-        <img src="{% static 'app/img/admin.jpg' %}" alt="Perfil" class="w-24 h-24 rounded-full shadow-xl">
-        <div>
-            <h1 class="text-5xl font-bold text-white font-sans animate-fade-in">{{ usuario.nombre }} {{ usuario.apellido }}</h1>
-            <p class="text-xl text-gray-300">{{ usuario.rol }}</p>
-            <p class="text-lg text-gray-400">{{ usuario.email }}</p>
+<div class="min-h-screen py-10 px-4 flex justify-center bg-animated-gradient">
+    <!-- Contenedor Principal -->
+    <div class="w-full max-w-5xl">
+        <!-- Perfil del Usuario -->
+        <div class="flex items-center space-x-6 bg-white bg-opacity-90 p-5 rounded-lg shadow-md mb-6 w-full">
+            <img src="{% static 'app/img/admin.jpg' %}" alt="Perfil"
+                class="w-16 h-16 rounded-full shadow-md border-4 border-blue-500">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-800">{{ usuario.nombre }} {{ usuario.apellido }}</h1>
+                <p class="text-lg text-gray-600">{{ usuario.rol }}</p>
+                <p class="text-md text-gray-500">{{ usuario.email }}</p>
+            </div>
         </div>
-    </div>
 
-    <!-- Botón Volver -->
-    <div class="mb-4">
-        <a href="{% url 'admin_home' %}" 
-           class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md transition-transform transform hover:scale-105">
-            ← Volver
-        </a>
-    </div>
+        <!-- Botón Añadir Horario -->
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-semibold text-gray-800">Horario</h2>
+            <button id="btn-aniadir"
+                class="bg-gradient-to-r from-green-400 to-green-600 text-white py-2 px-6 rounded-lg shadow-md transition-transform transform hover:scale-110 hover:shadow-lg">
+                Añadir Horario
+            </button>
+        </div>
 
-    <!-- Tabla de Horarios -->
-    <div class="bg-white bg-opacity-80 p-8 rounded-xl shadow-lg transition hover:shadow-2xl">
-        <table class="table-auto w-full border-collapse rounded-lg overflow-hidden">
-            <thead>
-                <tr class="bg-gradient-to-r from-cyan-500 to-blue-500 text-white">
-                    <th class="border p-4 text-left font-semibold">Horario</th>
-                    {% for dia in dias %}
-                        <th class="border p-4 text-left font-semibold">{{ dia }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for fila in horario_lista %}
-                    <tr class="hover:bg-gray-100 transition">
-                        <td class="border p-4 font-semibold">{{ fila.bloque }}</td>
-                        {% for dato in fila.datos %}
-                            <td class="border p-4">
-                                {% if dato %}
-                                    <div class="text-gray-800 font-medium">
-                                        {{ dato.curso.nombre }} - {{ dato.asignatura }}
-                                    </div>
-                                    <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg mt-2 editar-horario"
-                                            data-id="{{ dato.id }}" 
-                                            data-curso="{{ dato.curso.id }}" 
-                                            data-dia="{{ dato.dia_semana }}" 
-                                            data-bloque="{{ dato.bloque }}" 
-                                            data-asignatura="{{ dato.asignatura }}">
-                                        Editar
-                                    </button>
-                                {% else %}
-                                    <span class="text-gray-500 italic">Libre</span>
-                                {% endif %}
-                            </td>
+        <!-- Tabla de Horarios -->
+        <div class="overflow-x-auto">
+            <table class="table-fixed w-full border-collapse rounded-lg overflow-hidden shadow-lg">
+                <thead>
+                    <tr class="bg-gradient-to-br from-blue-700 to-purple-600 text-white">
+                        <th class="w-1/5 p-3 text-left font-semibold">Horario</th>
+                        {% for dia in dias %}
+                        <th class="w-1/5 p-3 text-center font-semibold">{{ dia }}</th>
                         {% endfor %}
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    {% for fila in horario_lista %}
+                    <tr class="bg-white hover:bg-blue-50 transition duration-150 ease-in-out border-b border-gray-200">
+                        <td class="p-3 font-semibold text-gray-800">{{ fila.bloque }}</td>
+                        {% for dato in fila.datos %}
+                        <td class="p-3 text-center">
+                            {% if dato %}
+                            <div class="text-blue-800 font-semibold">
+                                {{ dato.curso.nombre }} - {{ dato.asignatura }}
+                            </div>
+                            <button
+                                class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg mt-2 editar-horario shadow-sm">
+                                Editar
+                            </button>
+                            {% else %}
+                            <span class="text-gray-500 italic">Libre</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-    <!-- Botones de Acción -->
-    <div class="flex justify-end mt-6 space-x-4">
-        <button id="btn-aniadir" 
-                class="bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">
-            Añadir Horario
-        </button>
-    </div>
+        <!-- Modal para Añadir/Editar Horario -->
+        <div id="modal-aniadir" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+            <div
+                class="bg-white rounded-3xl shadow-xl p-8 w-full max-w-lg mx-auto transform transition-transform scale-95">
+                <h2 id="modal-title" class="text-2xl font-semibold mb-6 text-gray-800">Añadir Horario</h2>
+                <form id="form-aniadir-horario">
+                    {% csrf_token %}
+                    <input type="hidden" name="usuario_id" value="{{ usuario.id_usuario }}">
+                    <input type="hidden" id="horario-id" name="horario_id">
 
-    <!-- Modal para Añadir/Editar Horario -->
-    <div id="modal-aniadir" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-xl shadow-xl p-8 w-1/3 transform transition-transform scale-95">
-            <h2 id="modal-title" class="text-2xl font-semibold mb-6">Añadir Horario</h2>
-            <form id="form-aniadir-horario">
-                {% csrf_token %}
-                <input type="hidden" name="usuario_id" value="{{ usuario.id_usuario }}">
-                <input type="hidden" id="horario-id" name="horario_id">
-
-                <div class="space-y-4">
-                    <select name="curso" id="curso" required class="w-full p-3 border border-gray-300 rounded-lg">
-                        <option value="" disabled selected>Seleccionar Curso</option>
-                        {% for curso in cursos %}
+                    <div class="space-y-4">
+                        <select name="curso" id="curso" required
+                            class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition duration-200 ease-in-out">
+                            <option value="" disabled selected>Seleccionar Curso</option>
+                            {% for curso in cursos %}
                             <option value="{{ curso.id }}">{{ curso.nombre }}</option>
-                        {% endfor %}
-                    </select>
+                            {% endfor %}
+                        </select>
 
-                    <select name="dia_semana" id="dia_semana" required class="w-full p-3 border border-gray-300 rounded-lg">
-                        <option value="" disabled selected>Seleccionar Día</option>
-                        <option value="LUNES">Lunes</option>
-                        <option value="MARTES">Martes</option>
-                        <option value="MIERCOLES">Miércoles</option>
-                        <option value="JUEVES">Jueves</option>
-                        <option value="VIERNES">Viernes</option>
-                    </select>
+                        <select name="dia_semana" id="dia_semana" required
+                            class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition duration-200 ease-in-out">
+                            <option value="" disabled selected>Seleccionar Día</option>
+                            <option value="LUNES">Lunes</option>
+                            <option value="MARTES">Martes</option>
+                            <option value="MIERCOLES">Miércoles</option>
+                            <option value="JUEVES">Jueves</option>
+                            <option value="VIERNES">Viernes</option>
+                        </select>
 
-                    <select name="bloque" id="bloque" required class="w-full p-3 border border-gray-300 rounded-lg">
-                        <option value="" disabled selected>Seleccionar Bloque</option>
-                        {% for bloque in bloques %}
+                        <select name="bloque" id="bloque" required
+                            class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition duration-200 ease-in-out">
+                            <option value="" disabled selected>Seleccionar Bloque</option>
+                            {% for bloque in bloques %}
                             <option value="{{ bloque }}">{{ bloque }}</option>
-                        {% endfor %}
-                    </select>
+                            {% endfor %}
+                        </select>
 
-                    <input type="text" name="asignatura" id="asignatura" placeholder="Asignatura" required
-                           class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                        <input type="text" name="asignatura" id="asignatura" placeholder="Asignatura" required
+                            class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition duration-200 ease-in-out">
 
-                    <div class="flex justify-end space-x-4 mt-6">
-                        <button type="button" id="cerrar-aniadir" 
-                                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Cancelar</button>
-                        <button type="submit" 
-                                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">Guardar</button>
+                        <div class="flex justify-end space-x-4 mt-6">
+                            <button type="button" id="cerrar-aniadir"
+                                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                                Cancelar
+                            </button>
+                            <button type="submit"
+                                class="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-4 py-2 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                                Guardar
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- CSS Animación del Fondo -->
+<style>
+    .bg-animated-gradient {
+        background: linear-gradient(45deg, #1e3a8a, #38bdf8, #9333ea);
+        background-size: 400% 400%;
+        animation: gradientAnimation 10s ease infinite;
+    }
+
+    @keyframes gradientAnimation {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-    const btnAniadir = document.getElementById('btn-aniadir');
-    const modalAniadir = document.getElementById('modal-aniadir');
-    const cerrarAniadir = document.getElementById('cerrar-aniadir');
-    const formAniadirHorario = document.getElementById('form-aniadir-horario');
-    const mensajeEstado = document.getElementById('mensaje-estado');
-    const modalTitle = document.getElementById('modal-title');
-    const horarioIdInput = document.getElementById('horario-id');
+        const btnAniadir = document.getElementById('btn-aniadir');
+        const modalAniadir = document.getElementById('modal-aniadir');
+        const cerrarAniadir = document.getElementById('cerrar-aniadir');
+        const formAniadirHorario = document.getElementById('form-aniadir-horario');
+        const mensajeEstado = document.getElementById('mensaje-estado');
+        const modalTitle = document.getElementById('modal-title');
+        const horarioIdInput = document.getElementById('horario-id');
 
-    // Abrir Modal con modo "Añadir" o "Editar"
-    const abrirModal = (modo, datos = {}) => {
-        modalTitle.textContent = modo === 'editar' ? 'Editar Horario' : 'Añadir Horario';
-        horarioIdInput.value = datos.id || '';
-        document.getElementById('curso').value = datos.curso || '';
-        document.getElementById('dia_semana').value = datos.dia || '';
-        document.getElementById('bloque').value = datos.bloque || '';
-        document.getElementById('asignatura').value = datos.asignatura || '';
-        modalAniadir.classList.remove('hidden');
-    };
+        // Abrir Modal con modo "Añadir" o "Editar"
+        const abrirModal = (modo, datos = {}) => {
+            modalTitle.textContent = modo === 'editar' ? 'Editar Horario' : 'Añadir Horario';
+            horarioIdInput.value = datos.id || '';
+            document.getElementById('curso').value = datos.curso || '';
+            document.getElementById('dia_semana').value = datos.dia || '';
+            document.getElementById('bloque').value = datos.bloque || '';
+            document.getElementById('asignatura').value = datos.asignatura || '';
+            modalAniadir.classList.remove('hidden');
+        };
 
-    const cerrarModal = () => modalAniadir.classList.add('hidden');
+        const cerrarModal = () => modalAniadir.classList.add('hidden');
 
-    // Abrir Modal en modo "Añadir"
-    btnAniadir.addEventListener('click', () => abrirModal('añadir'));
+        // Abrir Modal en modo "Añadir"
+        btnAniadir.addEventListener('click', () => abrirModal('añadir'));
 
-    // Abrir Modal en modo "Editar"
-    document.querySelectorAll('.editar-horario').forEach(button => {
-        button.addEventListener('click', () => {
-            const datos = {
-                id: button.dataset.id,
-                curso: button.dataset.curso,
-                dia: button.dataset.dia,
-                bloque: button.dataset.bloque,
-                asignatura: button.dataset.asignatura,
-            };
-            abrirModal('editar', datos);
+        // Abrir Modal en modo "Editar"
+        document.querySelectorAll('.editar-horario').forEach(button => {
+            button.addEventListener('click', () => {
+                const datos = {
+                    id: button.dataset.id,
+                    curso: button.dataset.curso,
+                    dia: button.dataset.dia,
+                    bloque: button.dataset.bloque,
+                    asignatura: button.dataset.asignatura,
+                };
+                abrirModal('editar', datos);
+            });
         });
-    });
 
-    cerrarAniadir.addEventListener('click', cerrarModal);
+        cerrarAniadir.addEventListener('click', cerrarModal);
 
-    formAniadirHorario.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const formData = new FormData(formAniadirHorario);
+        formAniadirHorario.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const formData = new FormData(formAniadirHorario);
 
-        const url = formData.get('horario_id') ? '/editar-horario/' : '/agregar-horario/';
-
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            },
-            body: formData
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error en la solicitud');
+            // Verificar qué datos están siendo enviados al servidor
+            console.log("Datos del formulario:");
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}: ${value}`);
             }
-            return response.json();
-        })
-        .then(data => {
-            if (data.status === 'success') {
-                mostrarMensaje('Horario guardado correctamente.', 'bg-green-500');
-                location.reload();
+
+            const url = formData.get('horario_id') ? '/editar-horario/' : '/agregar-horario/';
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: formData
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Recargar la página para reflejar el nuevo horario
+                        location.reload();
+                    } else {
+                        mostrarMensaje('Error: ' + data.message, 'bg-red-500');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    mostrarMensaje('Ocurrió un error. Intente nuevamente.', 'bg-red-500');
+                });
+        });
+
+        const mostrarMensaje = (mensaje, color) => {
+            if (mensajeEstado) {
+                mensajeEstado.textContent = mensaje;
+                mensajeEstado.className = `fixed top-5 right-5 p-4 rounded-md shadow-lg text-white ${color}`;
+                mensajeEstado.classList.remove('hidden');
+                setTimeout(() => mensajeEstado.classList.add('hidden'), 3000);
             } else {
-                mostrarMensaje('Error: ' + data.message, 'bg-red-500');
+                console.error('Elemento #mensaje-estado no encontrado.');
             }
-        })
-        .catch(error => console.error('Error:', error));
+        };
     });
-
-    const mostrarMensaje = (mensaje, color) => {
-        mensajeEstado.textContent = mensaje;
-        mensajeEstado.className = `fixed top-5 right-5 p-4 rounded-md shadow-lg text-white ${color}`;
-        mensajeEstado.classList.remove('hidden');
-        setTimeout(() => mensajeEstado.classList.add('hidden'), 3000);
-    };
-});
-
 </script>
+
 {% endblock %}
