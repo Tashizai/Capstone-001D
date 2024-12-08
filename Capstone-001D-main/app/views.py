@@ -17,6 +17,8 @@ from django.http import FileResponse, Http404
 from django.http import HttpResponseForbidden
 from django.utils.dateparse import parse_datetime
 from django.contrib import messages
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -345,6 +347,7 @@ def editar_evento(request, evento_id):
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
 
+@login_required
 def lista_anuncios(request):
     anuncios = Anuncio.objects.all().order_by('-fecha_creacion')
     ultimo_anuncio = anuncios.first()  # Obtener el último anuncio creado si existe
@@ -357,22 +360,17 @@ def lista_anuncios(request):
 
 
 @csrf_exempt
+@login_required
 def crear_anuncio(request):
     if request.method == 'POST':
         data = json.loads(request.body)
-        titulo = data.get('titulo')
-        descripcion = data.get('descripcion')
-        grupo_destinatario = data.get('grupo')
-        
-        # Crear el anuncio
         anuncio = Anuncio.objects.create(
-            titulo=titulo,
-            descripcion=descripcion,
-            grupo_destinatario=grupo_destinatario,
+            titulo=data['titulo'],
+            descripcion=data['descripcion'],
+            grupo_destinatario=data['grupo'],
             autor=request.user
         )
         return JsonResponse({'message': 'Anuncio creado correctamente'}, status=201)
-
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 
@@ -387,7 +385,6 @@ def eliminar_anuncio(request, anuncio_id):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
-
 
 
 @login_required
@@ -507,6 +504,20 @@ def ver_carpeta(request, carpeta_id):
     }
     return render(request, 'app/ver_carpeta.html', context)
 
+@csrf_exempt
+@login_required
+def eliminar_carpeta(request, carpeta_id):
+    if request.method == 'DELETE':
+        try:
+            carpeta = Carpeta.objects.get(id=carpeta_id, usuario=request.user)
+            carpeta.delete()
+            return JsonResponse({'status': 'success', 'message': 'Carpeta eliminada correctamente.'})
+        except Carpeta.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'La carpeta no existe o no tienes permisos para eliminarla.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido.'}, status=405)
+
 
 @login_required
 def eliminar_archivo(request, archivo_id):
@@ -595,28 +606,59 @@ def ver_compartidos(request):
     return render(request, 'app/ver_compartidos.html', context)
 
 
+
 @login_required
 def ver_reuniones(request):
     usuario_actual = request.user
     ahora = timezone.now()
 
-    # Los usuarios administradores pueden ver todas las reuniones
-    if usuario_actual.is_staff or usuario_actual.is_superuser:
+    es_administrador = usuario_actual.is_staff or usuario_actual.is_superuser
+
+    # Obtener reuniones próximas
+    if es_administrador:
         reuniones_proximas = Reunion.objects.filter(fecha__gte=ahora).select_related('creador')
-        reuniones_pasadas = Reunion.objects.filter(fecha__lt=ahora).select_related('creador')
-        es_administrador = True
     else:
-        reuniones_proximas = Reunion.objects.filter(fecha__gte=ahora, destinatarios=usuario_actual.rol).select_related('creador')
-        reuniones_pasadas = Reunion.objects.filter(fecha__lt=ahora, destinatarios=usuario_actual.rol).select_related('creador')
-        es_administrador = False
+        reuniones_proximas = Reunion.objects.filter(
+            fecha__gte=ahora, destinatarios=usuario_actual.rol
+        ).select_related('creador')
+
+    # Obtener reuniones pasadas
+    if es_administrador:
+        reuniones_pasadas = Reunion.objects.filter(fecha__lt=ahora).select_related('creador')
+    else:
+        reuniones_pasadas = Reunion.objects.filter(
+            fecha__lt=ahora, destinatarios=usuario_actual.rol
+        ).select_related('creador')
+
+    # Parámetros de filtro y búsqueda
+    search_query = request.GET.get('search', '').lower()
+    destinatarios_filter = request.GET.get('filter', '')
+
+    # Aplicar filtros
+    if search_query:
+        reuniones_pasadas = reuniones_pasadas.filter(titulo__icontains=search_query)
+    if destinatarios_filter:
+        reuniones_pasadas = reuniones_pasadas.filter(destinatarios=destinatarios_filter)
+
+    # Paginación para reuniones pasadas
+    paginator = Paginator(reuniones_pasadas.order_by('-fecha'), 5)
+    page_number = request.GET.get('page')
+    try:
+        reuniones_pasadas_paginadas = paginator.page(page_number)
+    except PageNotAnInteger:
+        reuniones_pasadas_paginadas = paginator.page(1)
+    except EmptyPage:
+        reuniones_pasadas_paginadas = paginator.page(paginator.num_pages)
 
     context = {
         'reuniones_proximas': reuniones_proximas,
-        'reuniones_pasadas': reuniones_pasadas,
+        'reuniones_pasadas': reuniones_pasadas_paginadas,
         'es_administrador': es_administrador,
     }
 
     return render(request, 'app/reuniones.html', context)
+
+
 
 @csrf_exempt
 @login_required

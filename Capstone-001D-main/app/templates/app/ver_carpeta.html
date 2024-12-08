@@ -6,7 +6,7 @@
 {% block content %}
 <link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
 
-<div class="contenedor-principal min-h-screen bg-gradient-to-b from-blue-100 to-blue-200 p-8">
+<div class="contenedor-principal min-h-screen bg-animated-gradient p-8">
     <div class="container mx-auto">
         <!-- Título y botón para volver -->
         <div class="titulo-contenedor flex justify-between items-center mb-6">
@@ -19,7 +19,6 @@
             <!-- Botones a la izquierda -->
             <div class="botones-contenedor flex flex-col space-y-6 items-center justify-center mt-4 mb-16 md:mb-0">
                 {% if request.user == carpeta.usuario %}
-                    <!-- Solo el propietario puede ver estos botones -->
                     <button id="subirArchivoDirecto"
                             class="boton bg-green-600 text-white w-48 px-4 py-3 rounded-lg shadow-lg transition-transform transform hover:scale-105 hover:bg-green-700">
                         Subir archivo
@@ -180,24 +179,58 @@
 
 </div>
 
+<style>
+    .bg-animated-gradient {
+        background: linear-gradient(45deg, #1e3a8a, #38bdf8, #9333ea);
+        background-size: 400% 400%;
+        animation: gradientAnimation 10s ease infinite;
+    }
+
+    @keyframes gradientAnimation {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+</style>
+
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-        // Elementos de los modales
+        // Elementos del modal crear subcarpeta
         const crearSubcarpetaModal = document.getElementById('crearSubcarpetaModal');
-        const compartirModal = document.getElementById('compartirModal');
-        const eliminarModal = document.getElementById('eliminarModal');
-
-        // Botones
         const crearSubcarpetaBtn = document.getElementById('crearCarpetaBtn');
         const cerrarSubcarpetaModalBtn = document.getElementById('cerrarSubcarpetaModal');
         const guardarSubcarpetaBtn = document.getElementById('guardarSubcarpetaBtn');
+        const nombreSubcarpetaInput = document.getElementById('nombreSubcarpetaInput');
+
+        // Modal compartir recursos
+        const compartirModal = document.getElementById('compartirModal');
+        const compartirForm = document.getElementById('compartirForm');
+        const recursoCompartirId = document.getElementById('recursoCompartirId');
+        const tipoRecursoCompartir = document.getElementById('tipoRecursoCompartir');
+        const cancelarCompartirBtn = document.getElementById('cancelarCompartir');
+
+        // Modal eliminar archivo
+        const eliminarModal = document.getElementById('eliminarModal');
+        const cancelarEliminarBtn = document.getElementById('cancelarEliminar');
+        const confirmarEliminarBtn = document.getElementById('confirmarEliminar');
+
+        // Subir archivo
         const subirArchivoDirectoBtn = document.getElementById('subirArchivoDirecto');
         const uploadFileInput = document.createElement('input');
         uploadFileInput.type = 'file';
 
-        // Abrir modal para crear subcarpeta
+        // 1. Crear Subcarpeta
         if (crearSubcarpetaBtn) {
             crearSubcarpetaBtn.addEventListener('click', function () {
                 crearSubcarpetaModal.classList.remove('hidden');
@@ -205,31 +238,33 @@
             });
         }
 
-        // Cerrar modal de crear subcarpeta
         if (cerrarSubcarpetaModalBtn) {
             cerrarSubcarpetaModalBtn.addEventListener('click', function () {
                 crearSubcarpetaModal.classList.add('hidden');
                 crearSubcarpetaModal.classList.remove('flex');
-                document.getElementById('nombreSubcarpetaInput').value = '';
+                nombreSubcarpetaInput.value = '';
             });
         }
 
-        // Guardar subcarpeta
         if (guardarSubcarpetaBtn) {
             guardarSubcarpetaBtn.addEventListener('click', function () {
-                const nombreSubcarpeta = document.getElementById('nombreSubcarpetaInput').value.trim();
-                const carpetaId = "{{ carpeta.id }}"; // Obtener el ID de la carpeta actual
+                const nombreSubcarpeta = nombreSubcarpetaInput.value.trim();
+                const carpetaId = "{{ carpeta.id }}";
 
-                if (nombreSubcarpeta) {
-                    fetch(`/crear_subcarpeta/${carpetaId}/`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrfToken,
-                        },
-                        body: JSON.stringify({ nombre: nombreSubcarpeta }),
-                    })
-                    .then(response => response.ok ? response.json() : Promise.reject(response))
+                if (!nombreSubcarpeta) {
+                    alert('Por favor, ingrese un nombre para la subcarpeta.');
+                    return;
+                }
+
+                fetch(`/crear_subcarpeta/${carpetaId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify({ nombre: nombreSubcarpeta }),
+                })
+                    .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
                             window.location.reload();
@@ -241,13 +276,10 @@
                         console.error('Error:', error);
                         alert('Ocurrió un error inesperado al crear la subcarpeta.');
                     });
-                } else {
-                    alert('Por favor, ingrese un nombre para la subcarpeta.');
-                }
             });
         }
 
-        // Subir archivo
+        // 2. Subir Archivo
         if (subirArchivoDirectoBtn) {
             subirArchivoDirectoBtn.addEventListener('click', function () {
                 uploadFileInput.click();
@@ -267,100 +299,130 @@
                     },
                     body: formData,
                 })
-                .then(response => response.ok ? response.json() : Promise.reject(response))
-                .then(data => {
-                    if (data.status === 'success') {
-                        alert('Archivo subido exitosamente.');
-                        window.location.reload();
-                    } else {
-                        alert('Error al subir el archivo: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Ocurrió un error inesperado al subir el archivo.');
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert('Archivo subido exitosamente.');
+                            window.location.reload();
+                        } else {
+                            alert('Error al subir el archivo: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Ocurrió un error inesperado al subir el archivo.');
+                    });
             }
         });
 
-        // Compartir recurso (archivo o carpeta)
+        // 3. Descargar Archivo
+        document.querySelectorAll('.descargar-archivo').forEach(button => {
+            button.addEventListener('click', function () {
+                const url = this.dataset.url;
+                if (url) {
+                    window.open(url, '_blank');
+                } else {
+                    alert('No se pudo descargar el archivo. Verifique la URL.');
+                }
+            });
+        });
+
+        // 4. Compartir Recursos
         document.querySelectorAll('.compartir-archivo, .compartir-carpeta').forEach(button => {
             button.addEventListener('click', function () {
                 const recursoId = this.dataset.id;
                 const tipo = this.classList.contains('compartir-archivo') ? 'archivo' : 'carpeta';
-                document.getElementById('recursoCompartirId').value = recursoId;
-                document.getElementById('tipoRecursoCompartir').value = tipo;
+
+                recursoCompartirId.value = recursoId;
+                tipoRecursoCompartir.value = tipo;
+
                 compartirModal.classList.remove('hidden');
                 compartirModal.classList.add('flex');
             });
         });
 
-        document.getElementById('cancelarCompartir').addEventListener('click', function () {
-            compartirModal.classList.add('hidden');
-            compartirModal.classList.remove('flex');
-        });
-
-        document.getElementById('compartirForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const usuarios = Array.from(document.getElementById('usuariosCompartir').selectedOptions).map(option => option.value);
-            const recursoId = document.getElementById('recursoCompartirId').value;
-            const tipo = document.getElementById('tipoRecursoCompartir').value;
-
-            fetch(`/compartir/${tipo}/${recursoId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                },
-                body: JSON.stringify({ usuarios: usuarios }),
-            })
-            .then(response => response.ok ? response.json() : Promise.reject(response))
-            .then(data => {
-                if (data.status === 'success') {
-                    window.location.reload();
-                } else {
-                    alert('Error al compartir el recurso: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Ocurrió un error inesperado al compartir el recurso.');
+        if (cancelarCompartirBtn) {
+            cancelarCompartirBtn.addEventListener('click', function () {
+                compartirModal.classList.add('hidden');
+                compartirModal.classList.remove('flex');
             });
-        });
+        }
 
-        // Eliminar archivo
+        if (compartirForm) {
+            compartirForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const usuarios = Array.from(document.getElementById('usuariosCompartir').selectedOptions).map(option => option.value);
+                const recursoId = recursoCompartirId.value;
+                const tipo = tipoRecursoCompartir.value;
+
+                if (!usuarios.length) {
+                    alert('Por favor selecciona al menos un usuario.');
+                    return;
+                }
+
+                fetch(`/compartir/${tipo}/${recursoId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify({ usuarios: usuarios }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert('Recurso compartido exitosamente.');
+                            window.location.reload();
+                        } else {
+                            alert('Error al compartir: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Ocurrió un error inesperado.');
+                    });
+            });
+        }
+
+        // 5. Eliminar Archivo
         document.querySelectorAll('.eliminar-archivo').forEach(button => {
             button.addEventListener('click', function () {
                 const archivoId = this.dataset.id;
+
                 eliminarModal.classList.remove('hidden');
                 eliminarModal.classList.add('flex');
-                document.getElementById('confirmarEliminar').onclick = function () {
+
+                confirmarEliminarBtn.onclick = function () {
                     fetch(`/archivos/eliminar/${archivoId}/`, {
                         method: 'DELETE',
                         headers: {
                             'X-CSRFToken': csrfToken,
                         },
                     })
-                    .then(response => response.ok ? response.json() : Promise.reject(response))
-                    .then(data => {
-                        if (data.status === 'success') {
-                            window.location.reload();
-                        } else {
-                            alert('Error al eliminar el archivo: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Ocurrió un error inesperado al eliminar el archivo.');
-                    });
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                alert('Archivo eliminado exitosamente.');
+                                window.location.reload();
+                            } else {
+                                alert('Error al eliminar el archivo: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Ocurrió un error inesperado al eliminar el archivo.');
+                        });
                 };
             });
         });
 
-        document.getElementById('cancelarEliminar').addEventListener('click', function () {
-            eliminarModal.classList.add('hidden');
-            eliminarModal.classList.remove('flex');
-        });
+        if (cancelarEliminarBtn) {
+            cancelarEliminarBtn.addEventListener('click', function () {
+                eliminarModal.classList.add('hidden');
+                eliminarModal.classList.remove('flex');
+            });
+        }
     });
 </script>
 

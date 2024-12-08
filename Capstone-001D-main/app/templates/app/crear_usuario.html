@@ -3,8 +3,8 @@
 {% block title %}Crear Usuario{% endblock %}
 
 {% block content %}
-<div class="contenedor-principal min-h-screen from-blue-100 to-blue-200 py-16 flex items-center justify-center">
-    <div class="bg-white bg-gradient-to-b w-full max-w-lg rounded-lg shadow-lg p-4">
+<div class="contenedor-principal min-h-screen bg-animated-gradient py-16 flex items-center justify-center">
+    <div class="bg-white w-full max-w-lg rounded-lg shadow-lg p-4">
         <h2 class="text-3xl font-bold text-center text-blue-600 mb-6">Crear Usuario</h2>
 
         {% if messages %}
@@ -68,4 +68,27 @@
         </form>
     </div>
 </div>
+
+<style>
+    .bg-animated-gradient {
+        background: linear-gradient(45deg, #1e3a8a, #38bdf8, #9333ea);
+        background-size: 400% 400%;
+        animation: gradientAnimation 10s ease infinite;
+    }
+
+    @keyframes gradientAnimation {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+</style>
+
 {% endblock %}

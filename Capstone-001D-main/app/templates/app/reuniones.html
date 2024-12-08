@@ -4,10 +4,10 @@
 {% block title %}Reuniones{% endblock %}
 
 {% block content %}
-<div class="contenedor-principal min-h-screen bg-gradient-to-b from-blue-100 to-blue-200 p-8">
+<div class="contenedor-principal min-h-screen bg-animated-gradient p-8">
     <div class="container mx-auto">
         <!-- Título y Botón de Crear Reunión -->
-        <div class="titulo-contenedor flex justify-between mb-8 items-center">
+        <div class="titulo-contenedor flex justify-between items-center mb-6">
             <h1 class="text-4xl font-semibold">Reuniones</h1>
             {% if es_administrador %}
             <button id="crearReunionBtn"
@@ -17,45 +17,132 @@
             {% endif %}
         </div>
 
-        <!-- Reuniones Próximas -->
-        <div class="mb-12">
-            <h2 class="text-2xl font-semibold mb-4">Reuniones Próximas</h2>
-            <div class="reuniones-contenedor grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {% for reunion in reuniones_proximas %}
-                <a href="{% url 'ver_reunion' reunion.id %}">
-                    <div class="reunion bg-white p-4 rounded-lg shadow-md transition-transform transform hover:scale-105 hover:bg-blue-50 max-w-xs">
-                        <h3 class="text-xl font-semibold mb-2">{{ reunion.titulo }}</h3>
-                        <p class="text-gray-700">Fecha: {{ reunion.fecha|date:"d/m/Y H:i" }}</p>
-                        <p class="text-sm text-gray-600">Dirigido a: {{ reunion.destinatarios }}</p>
-                        <p class="text-sm text-gray-600">Creador: {{ reunion.creador.nombre }} {{ reunion.creador.apellido }}</p>
-                        <p class="text-sm mt-2">{{ reunion.descripcion }}</p>
-                    </div>
-                </a>
-                {% endfor %}
-                {% if reuniones_proximas|length == 0 %}
-                <p class="text-gray-700">No hay reuniones próximas.</p>
-                {% endif %}
+        <!-- Búsqueda y filtros -->
+        <div class="filtros-contenedor flex justify-between items-center mb-4">
+            <div>
+                <input type="text" id="buscarReunionInput" placeholder="Buscar reunión..."
+                    class="w-64 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+                <select id="filtrarDestinatariosInput"
+                    class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Filtrar por destinatario</option>
+                    <option value="Directivo">Directivos</option>
+                    <option value="Profesor">Profesores</option>
+                    <option value="Asistente">Asistentes</option>
+                </select>
             </div>
         </div>
 
-        <!-- Reuniones Pasadas -->
+        <!-- Reuniones Próximas -->
         <div class="mb-12">
-            <h2 class="text-2xl font-semibold mb-4">Reuniones Pasadas</h2>
-            <div class="reuniones-contenedor grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {% for reunion in reuniones_pasadas %}
-                <div class="reunion bg-white p-4 rounded-lg shadow-md transition-transform transform hover:scale-105 hover:bg-blue-50 max-w-xs">
-                    <h3 class="text-xl font-semibold mb-2">{{ reunion.titulo }}</h3>
-                    <p class="text-gray-700">Fecha: {{ reunion.fecha|date:"d/m/Y H:i" }}</p>
-                    <p class="text-sm text-gray-600">Dirigido a: {{ reunion.destinatarios }}</p>
-                    <p class="text-sm text-gray-600">Creador: {{ reunion.creador.nombre }} {{ reunion.creador.apellido }}</p>
-                    <p class="text-sm mt-2">{{ reunion.descripcion }}</p>
-                </div>
-                {% endfor %}
-                {% if reuniones_pasadas|length == 0 %}
-                <p class="text-gray-700">No hay reuniones pasadas.</p>
-                {% endif %}
+            <h2 class="text-2xl font-semibold mb-4">Reuniones Próximas</h2>
+            <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+                <table id="tablaReuniones" class="min-w-full border-collapse">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="text-left px-6 py-4 text-sm font-medium text-gray-700">Título</th>
+                            <th class="text-left px-6 py-4 text-sm font-medium text-gray-700">Fecha</th>
+                            <th class="text-left px-6 py-4 text-sm font-medium text-gray-700">Dirigido a</th>
+                            <th class="text-left px-6 py-4 text-sm font-medium text-gray-700">Creador</th>
+                            <th class="text-left px-6 py-4 text-sm font-medium text-gray-700">Descripción</th>
+                            <th class="text-left px-6 py-4 text-sm font-medium text-gray-700">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for reunion in reuniones_proximas %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 text-sm text-gray-700">{{ reunion.titulo }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">{{ reunion.fecha|date:"d/m/Y H:i" }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">{{ reunion.destinatarios }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">{{ reunion.creador.nombre }} {{reunion.creador.apellido }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">{{ reunion.descripcion }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">
+                                <a href="{% url 'ver_reunion' reunion.id %}" class="text-blue-600 hover:text-blue-800 transition">
+                                    Entrar
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% if reuniones_proximas|length == 0 %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 text-center text-gray-700">No hay reuniones próximas.</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
             </div>
         </div>
+
+        {% if es_administrador %}
+        <div class="mb-12">
+            <h2 class="text-2xl font-semibold mb-4">Reuniones Pasadas</h2>
+            <!-- Inputs para búsqueda y filtrado -->
+            <div class="flex items-center space-x-4 mb-4">
+                <input type="text" id="buscarReunionPasadaInput" placeholder="Buscar por título"
+                    class="p-2 border rounded w-1/3" />
+                <select id="filtrarDestinatariosPasadosInput" class="p-2 border rounded w-1/3">
+                    <option value="">Todos</option>
+                    <option value="Directivo">Directivos</option>
+                    <option value="Profesor">Profesores</option>
+                    <option value="Asistente">Asistentes</option>
+                </select>
+            </div>
+
+            <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+                <table id="tablaReunionesPasadas" class="min-w-full border-collapse">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="text-left px-6 py-4 text-sm font-medium text-gray-700">Título</th>
+                            <th class="text-left px-6 py-4 text-sm font-medium text-gray-700">Fecha</th>
+                            <th class="text-left px-6 py-4 text-sm font-medium text-gray-700">Dirigido a</th>
+                            <th class="text-left px-6 py-4 text-sm font-medium text-gray-700">Creador</th>
+                            <th class="text-left px-6 py-4 text-sm font-medium text-gray-700">Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for reunion in reuniones_pasadas %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 text-sm text-gray-700">{{ reunion.titulo }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">{{ reunion.fecha|date:"d/m/Y H:i" }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">{{ reunion.destinatarios }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">{{ reunion.creador.nombre }} {{reunion.creador.apellido }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">{{ reunion.descripcion }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% if reuniones_pasadas|length == 0 %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 text-center text-gray-700">No hay reuniones pasadas.</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Controles de paginación -->
+            <div class="flex justify-between items-center mt-4">
+                <div>
+                    {% if reuniones_pasadas.has_previous %}
+                    <a href="?page={{ reuniones_pasadas.previous_page_number }}"
+                        class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">
+                        &laquo; Anterior
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="text-gray-600">
+                    Página {{ reuniones_pasadas.number }} de {{ reuniones_pasadas.paginator.num_pages }}
+                </div>
+                <div>
+                    {% if reuniones_pasadas.has_next %}
+                    <a href="?page={{ reuniones_pasadas.next_page_number }}"
+                        class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">
+                        Siguiente &raquo;
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -97,6 +184,28 @@
         </form>
     </div>
 </div>
+
+<style>
+    .bg-animated-gradient {
+        background: linear-gradient(45deg, #1e3a8a, #38bdf8, #9333ea);
+        background-size: 400% 400%;
+        animation: gradientAnimation 10s ease infinite;
+    }
+
+    @keyframes gradientAnimation {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+</style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -174,7 +283,44 @@
                 }
             });
         }
+
+        // Búsqueda y Filtrado en Tablas de Reuniones
+        function setupTableFilters(buscarInputId, filtrarSelectId, tablaId) {
+            const buscarInput = document.getElementById(buscarInputId);
+            const filtrarSelect = document.getElementById(filtrarSelectId);
+            const tabla = document.getElementById(tablaId);
+            const filas = tabla ? Array.from(tabla.querySelectorAll('tbody tr')) : [];
+
+            function filtrarFilas() {
+                const query = buscarInput ? buscarInput.value.toLowerCase() : '';
+                const filtroDestinatarios = filtrarSelect ? filtrarSelect.value : '';
+
+                filas.forEach(fila => {
+                    const titulo = fila.children[0]?.textContent.toLowerCase() || '';
+                    const destinatarios = fila.children[2]?.textContent || '';
+
+                    if (
+                        (titulo.includes(query) || query === '') &&
+                        (destinatarios === filtroDestinatarios || filtroDestinatarios === '')
+                    ) {
+                        fila.style.display = '';
+                    } else {
+                        fila.style.display = 'none';
+                    }
+                });
+            }
+
+            if (buscarInput) {
+                buscarInput.addEventListener('input', filtrarFilas);
+            }
+            if (filtrarSelect) {
+                filtrarSelect.addEventListener('change', filtrarFilas);
+            }
+        }
+
+        // Configuración para reuniones próximas y pasadas
+        setupTableFilters('buscarReunionInput', 'filtrarDestinatariosInput', 'tablaReuniones');
+        setupTableFilters('buscarReunionPasadaInput', 'filtrarDestinatariosPasadosInput', 'tablaReunionesPasadas');
     });
 </script>
-
 {% endblock %}

@@ -1,75 +1,79 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mx-auto p-4">
-    <!-- Botones Crear Anuncio y Volver -->
-    <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
-        <div class="flex space-x-4">
-            {% if user.is_staff %}
-            <button id="openModal" class="bg-gradient-to-r from-green-400 to-green-600 text-white py-2 px-6 rounded-full shadow-lg hover:bg-cyan-500 hover:shadow-xl transition transform hover:scale-105">
-                Crear Anuncio
-            </button>
-            {% endif %}
-        </div>
+<div class="min-h-screen py-10 px-4 flex flex-col bg-animated-gradient">
+    <!-- Sidebar con Anuncios -->
+    <div class="col-span-3 flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold text-white">Anuncios</h2>
+        {% if user.is_staff %}
+        <button id="openModal"
+            class="bg-gradient-to-r from-green-500 to-green-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:from-green-600 hover:to-green-800 hover:shadow-xl transition-all transform hover:scale-105">
+            Crear Anuncio
+        </button>
+        {% endif %}
     </div>
-
-    <!-- Contenedor Principal de Anuncios -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gradient-blue p-6 rounded-lg shadow-2xl h-[600px] md:h-[600px] overflow-hidden">
-        <!-- Sidebar con Anuncios -->
-        <div class="sidebar col-span-1 p-6 bg-white bg-opacity-80 shadow-md border-r-2 border-blue-500 overflow-y-auto h-full">
-            <h2 class="text-2xl font-bold text-pink-800 mb-6">Anuncios</h2>
-            <div class="anuncios-list space-y-6 bg-opacity-60">
+    <div
+        class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gradient-blue p-6 rounded-lg shadow-2xl h-[800px] overflow-hidden">
+        <div
+            class="sidebar col-span-1 p-6 bg-white bg-opacity-80 shadow-md border-r-2 border-blue-500 overflow-y-auto h-full">
+            <h2 class="text-2xl font-bold text-pink-800 mb-6">Lista de Anuncios</h2>
+            <div class="anuncios-list">
                 {% for anuncio in anuncios %}
-                <div class="anuncio-item p-4  rounded-lg shadow-md transition-transform transform hover:scale-105 hover:shadow-lg relative">
-                    <div onclick="mostrarAnuncio('{{ anuncio.id }}')" class="cursor-pointer w-full">
-                        <h3 class="font-bold text-lg text-black">{{ anuncio.titulo }}</h3>
-                        <p class="text-black-100 text-sm">{{ anuncio.descripcion|truncatechars:50 }}</p>
+                <div
+                    class="anuncio-item p-4 bg-white border border-gray-300 rounded mb-4 cursor-pointer hover:bg-gray-100 shadow-sm transition relative">
+                    <div class="flex justify-between items-center">
+                        <div onclick="mostrarAnuncio('{{ anuncio.id }}')" class="cursor-pointer w-full">
+                            <h3 class="font-bold text-xl text-blue-600">{{ anuncio.titulo }}</h3>
+                            <p class="text-gray-600">{{ anuncio.descripcion|truncatechars:50 }}</p>
+                        </div>
+                        {% if user.is_staff %}
+                        <button onclick="eliminarAnuncioModal('{{ anuncio.id }}')"
+                            class="delete-icon bg-transparent hover:bg-red-500 text-red-500 hover:text-white rounded-full p-2 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                        {% endif %}
                     </div>
-                    {% if user.is_staff %}
-                    <button onclick="eliminarAnuncioModal('{{ anuncio.id }}')" class="delete-icon bg-transparent hover:bg-red-500 text-red-600 hover:text-white rounded-full p-2 transition absolute top-2 right-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                    {% endif %}
                 </div>
                 {% endfor %}
             </div>
         </div>
-
-        <!-- Detalle del Anuncio Seleccionado -->
-        <div class="contenido-anuncio col-span-2 p-6 bg-white bg-opacity-80 rounded-lg shadow-md h-full overflow-auto">
-            <h2 class="text-3xl font-bold mb-4 text-blue-900">
+        <div class="anuncio-detalle col-span-2 p-6 bg-white bg-opacity-80 rounded-lg shadow-md h-full overflow-auto">
+            <h2 class="text-3xl font-bold mb-4 text-blue-700">
                 {% if ultimo_anuncio %}
-                    {{ ultimo_anuncio.titulo }}
+                {{ ultimo_anuncio.titulo }}
                 {% else %}
-                    Sin anuncios disponibles
+                Sin anuncios disponibles
                 {% endif %}
             </h2>
-            <p class="text-lg text-gray-800 mb-2 font-semibold">
+            <p class="text-lg text-gray-700 mb-2 font-semibold">
                 {% if ultimo_anuncio %}
-                    {{ ultimo_anuncio.autor.nombre }} {{ ultimo_anuncio.autor.apellido }}
+                {{ ultimo_anuncio.autor.nombre }}
                 {% else %}
-                    ---
+                ---
                 {% endif %}
             </p>
             <p class="font-semibold text-gray-800 mb-4">
                 {% if ultimo_anuncio %}
-                    Para: {{ ultimo_anuncio.grupo_destinatario }}
+                Para: {{ ultimo_anuncio.grupo_destinatario }}
                 {% else %}
-                    ---
+                ---
                 {% endif %}
             </p>
-            <p class="text-gray-800 leading-relaxed">
+            <p class="text-gray-700 leading-relaxed">
                 {% if ultimo_anuncio %}
-                    {{ ultimo_anuncio.descripcion }}
+                {{ ultimo_anuncio.descripcion }}
                 {% else %}
-                    ---
+                ---
                 {% endif %}
             </p>
         </div>
     </div>
 </div>
+
 
 <!-- Modal Crear Anuncio -->
 <div id="crearAnuncioModal" class="fixed inset-0 bg-gray-800 bg-opacity-60 flex items-center justify-center hidden">
@@ -114,6 +118,7 @@
     </div>
 </div>
 
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const openModalButton = document.getElementById("openModal");
@@ -127,11 +132,11 @@
         openModalButton?.addEventListener("click", () => {
             modal.classList.remove("hidden");
         });
-    
+
         closeModalButton.addEventListener("click", () => {
             modal.classList.add("hidden");
         });
-    
+
         cancelarEliminarButton.addEventListener("click", () => {
             eliminarModal.classList.add("hidden");
         });
@@ -144,37 +149,37 @@
                         'X-CSRFToken': getCookie('csrftoken')
                     }
                 })
-                .then(response => {
-                    if (response.ok) {
-                        window.location.reload();
-                    } else {
-                        console.error('Error al eliminar el anuncio');
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                });
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            console.error('Error al eliminar el anuncio');
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
             }
             eliminarModal.classList.add("hidden");
         });
 
         // Función para mostrar el modal de eliminar anuncio
-        window.eliminarAnuncioModal = function(id) {
+        window.eliminarAnuncioModal = function (id) {
             anuncioIdEliminar = id;
             eliminarModal.classList.remove("hidden");
         };
-    
+
         // Form submission logic
         const form = document.getElementById("crearAnuncioForm");
         form.addEventListener("submit", (e) => {
             e.preventDefault();
-    
+
             const data = {
                 titulo: form.titulo.value,
                 descripcion: form.descripcion.value,
                 grupo: form.grupo.value
             };
-    
+
             fetch('/anuncios/crear/', {
                 method: 'POST',
                 headers: {
@@ -183,17 +188,17 @@
                 },
                 body: JSON.stringify(data)
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-                modal.classList.add("hidden");
-                window.location.reload();  // Recargar la página para ver el nuevo anuncio
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Success:', data);
+                    modal.classList.add("hidden");
+                    window.location.reload();  // Recargar la página para ver el nuevo anuncio
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
         });
-    
+
         // Función para obtener el CSRF token
         function getCookie(name) {
             let cookieValue = null;
@@ -210,6 +215,40 @@
             return cookieValue;
         }
     });
+
+    function mostrarAnuncio(anuncioId) {
+        const anuncios = JSON.parse('{{ anuncios_json|safe }}'.replace(/&quot;/g, '"'));
+        const anuncio = anuncios.find(anuncio => anuncio.id == anuncioId);
+
+        if (anuncio) {
+            document.querySelector('.anuncio-detalle h2').innerText = anuncio.titulo;
+            document.querySelector('.anuncio-detalle p:nth-of-type(1)').innerText = anuncio.autor__nombre ? anuncio.autor__nombre : 'Autor desconocido';
+            document.querySelector('.anuncio-detalle p:nth-of-type(2)').innerText = 'Para: ' + (anuncio.grupo_destinatario ? anuncio.grupo_destinatario : 'Grupo no especificado');
+            document.querySelector('.anuncio-detalle p:nth-of-type(3)').innerText = anuncio.descripcion ? anuncio.descripcion : 'Sin descripción';
+        }
+    }
 </script>
+
+<style>
+    .bg-animated-gradient {
+        background: linear-gradient(45deg, #1e3a8a, #38bdf8, #9333ea);
+        background-size: 400% 400%;
+        animation: gradientAnimation 10s ease infinite;
+    }
+
+    @keyframes gradientAnimation {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+</style>
 
 {% endblock %}

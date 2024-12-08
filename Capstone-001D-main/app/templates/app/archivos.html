@@ -6,7 +6,7 @@
 {% block content %}
 <link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
 
-<div class="contenedor-principal min-h-screen bg-gradient-to-b from-blue-100 to-blue-200 p-8">
+<div class="contenedor-principal min-h-screen bg-animated-gradient p-8">
     <!-- Contenedor principal -->
     <div class="container mx-auto">
         <!-- Título -->
@@ -16,7 +16,7 @@
 
         <div class="contenido flex flex-col md:flex-row justify-between items-start">
             <!-- Botones a la izquierda -->
-            <div class="botones-contenedor flex flex-col space-y-6 items-center justify-center mt-4 mb-16 md:mb-0">
+            <div class="botones-contenedor flex flex-col space-y-6 items-center justify-center mt-4 mb-16 md:mb-0 pr-4">
                 <button id="subirArchivoDirecto"
                     class="boton bg-green-600 text-white w-48 px-4 py-3 rounded-lg shadow-lg transition-transform transform hover:scale-105 hover:bg-green-700">
                     Subir archivo
@@ -53,6 +53,15 @@
                                         viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M17 8h2a2 2 0 011 3.74V12a2 2 0 11-4 0V8a2 2 0 013.74-1H17z" />
+                                    </svg>
+                                </button>
+                                <!-- Botón para eliminar -->
+                                <button class="eliminar-carpeta text-red-500 hover:text-red-700 transition"
+                                    data-id="{{ carpeta.id }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
                             </div>
@@ -175,20 +184,20 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Elementos del modal compartir
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // Modal para compartir recursos
         const compartirModal = document.getElementById('compartirModal');
         const compartirForm = document.getElementById('compartirForm');
         const recursoCompartirId = document.getElementById('recursoCompartirId');
         const tipoRecursoCompartir = document.getElementById('tipoRecursoCompartir');
         const cancelarCompartirBtn = document.getElementById('cancelarCompartir');
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-        // Botones de compartir
+        // Botones para compartir recursos
         const compartirArchivoBtns = document.querySelectorAll('.compartir-archivo');
         const compartirCarpetaBtns = document.querySelectorAll('.compartir-carpeta');
 
-        // Abrir modal para compartir archivo
-        compartirArchivoBtns.forEach(function (btn) {
+        compartirArchivoBtns.forEach(btn => {
             btn.addEventListener('click', function () {
                 recursoCompartirId.value = this.dataset.id;
                 tipoRecursoCompartir.value = 'archivo';
@@ -197,8 +206,7 @@
             });
         });
 
-        // Abrir modal para compartir carpeta
-        compartirCarpetaBtns.forEach(function (btn) {
+        compartirCarpetaBtns.forEach(btn => {
             btn.addEventListener('click', function (e) {
                 e.stopPropagation();
                 recursoCompartirId.value = this.dataset.id;
@@ -208,7 +216,6 @@
             });
         });
 
-        // Cerrar modal
         if (cancelarCompartirBtn) {
             cancelarCompartirBtn.addEventListener('click', function () {
                 compartirModal.classList.add('hidden');
@@ -216,7 +223,6 @@
             });
         }
 
-        // Lógica para compartir
         if (compartirForm) {
             compartirForm.addEventListener('submit', function (e) {
                 e.preventDefault();
@@ -240,15 +246,13 @@
                 })
                     .then(response => {
                         if (!response.ok) {
-                            return response.json().then(err => {
-                                throw new Error(`Error en la respuesta del servidor: ${err.message}`);
-                            });
+                            throw new Error('Error en la respuesta del servidor');
                         }
                         return response.json();
                     })
                     .then(data => {
                         if (data.status === 'success') {
-                            alert('Compartido exitosamente.');
+                            alert('Recurso compartido exitosamente.');
                             compartirModal.classList.add('hidden');
                             compartirModal.classList.remove('flex');
                         } else {
@@ -257,96 +261,82 @@
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Ocurrió un error inesperado al compartir el recurso. Detalle: ' + error.message);
+                        alert('Ocurrió un error inesperado.');
                     });
             });
         }
 
-        // Elementos del modal crear carpeta
+        // Modal para crear carpetas
         const crearCarpetaBtn = document.getElementById('crearCarpetaBtn');
         const crearCarpetaModal = document.getElementById('crearCarpetaModal');
         const cerrarModalCarpetaBtn = document.getElementById('cerrarModalCarpeta');
         const guardarCarpetaBtn = document.getElementById('guardarCarpetaBtn');
         const nombreCarpetaInput = document.getElementById('nombreCarpetaInput');
 
-        // Abrir modal para crear carpeta
         if (crearCarpetaBtn) {
             crearCarpetaBtn.addEventListener('click', function () {
-                if (crearCarpetaModal) {
-                    crearCarpetaModal.classList.remove('hidden');
-                    crearCarpetaModal.classList.add('flex');
-                }
+                crearCarpetaModal.classList.remove('hidden');
+                crearCarpetaModal.classList.add('flex');
             });
         }
 
-        // Cerrar modal de crear carpeta
         if (cerrarModalCarpetaBtn) {
             cerrarModalCarpetaBtn.addEventListener('click', function () {
-                if (crearCarpetaModal) {
-                    crearCarpetaModal.classList.add('hidden');
-                    crearCarpetaModal.classList.remove('flex');
-                    nombreCarpetaInput.value = '';
-                }
+                crearCarpetaModal.classList.add('hidden');
+                crearCarpetaModal.classList.remove('flex');
+                nombreCarpetaInput.value = '';
             });
         }
 
-        // Guardar carpeta
         if (guardarCarpetaBtn) {
             guardarCarpetaBtn.addEventListener('click', function () {
                 const nombreCarpeta = nombreCarpetaInput.value.trim();
-                if (nombreCarpeta) {
-                    fetch("{% url 'crear_carpeta' %}", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrfToken,
-                        },
-                        body: JSON.stringify({ nombre: nombreCarpeta }),
-                    })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Error en la respuesta del servidor');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.status === 'success') {
-                                window.location.reload();
-                            } else {
-                                alert('Error al crear la carpeta: ' + data.message);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Ocurrió un error inesperado al crear la carpeta.');
-                        });
-                } else {
+                if (!nombreCarpeta) {
                     alert('Por favor, ingrese un nombre para la carpeta.');
+                    return;
                 }
+
+                fetch("{% url 'crear_carpeta' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify({ nombre: nombreCarpeta }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert('Carpeta creada correctamente.');
+                            window.location.reload();
+                        } else {
+                            alert('Error al crear carpeta: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Ocurrió un error al crear la carpeta.');
+                    });
             });
         }
 
-        // Elementos de subir archivo
+        // Subir archivos
         const subirArchivoDirectoBtn = document.getElementById('subirArchivoDirecto');
         const uploadFileInput = document.createElement('input');
         uploadFileInput.type = 'file';
         uploadFileInput.id = 'uploadFileInput';
 
-        // Subir archivo
-        if (subirArchivoDirectoBtn) {
-            subirArchivoDirectoBtn.addEventListener('click', function () {
-                uploadFileInput.click();
-            });
-        }
+        subirArchivoDirectoBtn?.addEventListener('click', function () {
+            uploadFileInput.click();
+        });
 
         uploadFileInput.addEventListener('change', function (event) {
             if (event.target.files.length > 0) {
                 const formData = new FormData();
                 formData.append('archivo', event.target.files[0]);
 
-                // Si estamos en una carpeta, se obtiene el ID de la carpeta, si no, es raíz
                 const carpetaId = "{{ carpeta.id|default_if_none:'' }}";
-                let url = carpetaId ? `/archivos/subir/${carpetaId}/` : `/archivos/subir/`;
+                const url = carpetaId ? `/archivos/subir/${carpetaId}/` : `/archivos/subir/`;
 
                 fetch(url, {
                     method: 'POST',
@@ -355,15 +345,10 @@
                     },
                     body: formData,
                 })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Error en la respuesta del servidor');
-                        }
-                        return response.json();
-                    })
+                    .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            alert('Archivo subido exitosamente.');
+                            alert('Archivo subido correctamente.');
                             window.location.reload();
                         } else {
                             alert('Error al subir el archivo: ' + data.message);
@@ -371,25 +356,32 @@
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Ocurrió un error inesperado al subir el archivo.');
+                        alert('Ocurrió un error al subir el archivo.');
                     });
             }
         });
 
-        // Elementos del modal eliminar archivo
+        // Descargar archivos
+        const descargarArchivoBtns = document.querySelectorAll('.descargar-archivo');
+
+        descargarArchivoBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                const url = this.dataset.url;
+                window.open(url, '_blank');
+            });
+        });
+
+        // Eliminar archivos y carpetas
         const eliminarArchivoBtns = document.querySelectorAll('.eliminar-archivo');
+        const eliminarCarpetaBtns = document.querySelectorAll('.eliminar-carpeta');
 
-        if (eliminarArchivoBtns.length > 0) {
-            eliminarArchivoBtns.forEach(function (btnEliminar) {
-                btnEliminar.addEventListener('click', function () {
-                    const archivoId = this.dataset.id;
-
-                    const modalEliminar = document.createElement('div');
-                    modalEliminar.innerHTML = `
+        const mostrarModalEliminar = (recursoId, tipo) => {
+            const modalEliminar = document.createElement('div');
+            modalEliminar.innerHTML = `
 <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white p-6 rounded-lg shadow-xl">
-        <h2 class="text-2xl font-semibold mb-4 text-red-600">Eliminar Archivo</h2>
-        <p class="mb-6">¿Estás seguro de que deseas eliminar este archivo?</p>
+        <h2 class="text-2xl font-semibold mb-4 text-red-600">Eliminar ${tipo}</h2>
+        <p class="mb-6">¿Estás seguro de que deseas eliminar este ${tipo}?</p>
         <div class="flex justify-end space-x-4">
             <button type="button"
                 class="cancelar-eliminar bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Cancelar</button>
@@ -399,47 +391,74 @@
     </div>
 </div>
 `;
-                    document.body.appendChild(modalEliminar);
+            document.body.appendChild(modalEliminar);
 
-                    modalEliminar.querySelector('.cancelar-eliminar').addEventListener('click', function () {
+            modalEliminar.querySelector('.cancelar-eliminar').addEventListener('click', function () {
+                document.body.removeChild(modalEliminar);
+            });
+
+            modalEliminar.querySelector('.confirmar-eliminar').addEventListener('click', function () {
+                fetch(`/${tipo}s/eliminar/${recursoId}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                    },
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert(`${tipo.charAt(0).toUpperCase() + tipo.slice(1)} eliminado correctamente.`);
+                            window.location.reload();
+                        } else {
+                            alert('Error al eliminar: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Ocurrió un error al eliminar.');
+                    })
+                    .finally(() => {
                         document.body.removeChild(modalEliminar);
                     });
-
-                    modalEliminar.querySelector('.confirmar-eliminar').addEventListener('click', function () {
-                        fetch(`/archivos/eliminar/${archivoId}/`, {
-                            method: 'DELETE',
-                            headers: {
-                                'X-CSRFToken': csrfToken,
-                            },
-                        })
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error('Error en la respuesta del servidor');
-                                }
-                                return response.json();
-                            })
-                            .then(data => {
-                                if (data.status === 'success') {
-                                    alert('Archivo eliminado correctamente.');
-                                    window.location.reload();
-                                } else {
-                                    alert('Error al eliminar el archivo: ' + data.message);
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                alert('Ocurrió un error inesperado al eliminar el archivo.');
-                            })
-                            .finally(() => {
-                                document.body.removeChild(modalEliminar);
-                            });
-                    });
-                });
             });
-        }
+        };
+
+        eliminarArchivoBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                mostrarModalEliminar(this.dataset.id, 'archivo');
+            });
+        });
+
+        eliminarCarpetaBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                mostrarModalEliminar(this.dataset.id, 'carpeta');
+            });
+        });
     });
 </script>
 
+
+<style>
+    .bg-animated-gradient {
+        background: linear-gradient(45deg, #1e3a8a, #38bdf8, #9333ea);
+        background-size: 400% 400%;
+        animation: gradientAnimation 10s ease infinite;
+    }
+
+    @keyframes gradientAnimation {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+</style>
 
 
 {% endblock %}

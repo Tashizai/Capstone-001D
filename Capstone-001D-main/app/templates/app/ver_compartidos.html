@@ -4,7 +4,7 @@
 {% block title %}Compartidos Conmigo{% endblock %}
 
 {% block content %}
-<div class="contenedor-principal min-h-screen bg-gradient-to-b from-blue-100 to-blue-200 p-8">
+<div class="contenedor-principal min-h-screen bg-animated-gradient p-8">
     <div class="container mx-auto">
         <!-- Título -->
         <div class="titulo-contenedor flex justify-center mb-8">
@@ -72,4 +72,27 @@
         </div>
     </div>
 </div>
+
+<style>
+    .bg-animated-gradient {
+        background: linear-gradient(45deg, #1e3a8a, #38bdf8, #9333ea);
+        background-size: 400% 400%;
+        animation: gradientAnimation 10s ease infinite;
+    }
+
+    @keyframes gradientAnimation {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+</style>
+
 {% endblock %}

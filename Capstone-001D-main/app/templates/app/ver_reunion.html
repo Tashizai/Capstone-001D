@@ -3,74 +3,77 @@
 {% block title %}Sala de Reunión{% endblock %}
 
 {% block content %}
-<div class="contenedor-principal h-screen w-screen bg-gradient-to-b from-blue-100 to-blue-200 p-0 m-0">
-    <div class="container h-full w-full mx-auto flex p-0">
-        <!-- Contenedor principal de la reunión y el chat -->
-        <div class="flex-grow flex h-full">
-            <!-- Videollamada -->
-            <div id="videollamada" class="flex-grow bg-black p-0 mr-2 rounded-lg shadow-lg">
-                <div id="jitsi-container" class="w-full h-full" style="min-height: 100%;"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script src="https://meet.jit.si/external_api.js"></script>
+<div id="jitsi-container" class="w-full h-screen bg-black"></div>
+<script src="https://8x8.vc/vpaas-magic-cookie-5efac97c463744ddaba8ea5ae22d3dce/external_api.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Inicializar Jitsi
-        const domain = "meet.jit.si";
+        const domain = "8x8.vc";
+        const jwt = "eyJraWQiOiJ2cGFhcy1tYWdpYy1jb29raWUtNWVmYWM5N2M0NjM3NDRkZGFiYThlYTVhZTIyZDNkY2UvMTc5NTY1LVNBTVBMRV9BUFAiLCJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiJqaXRzaSIsImlzcyI6ImNoYXQiLCJpYXQiOjE3MzM2OTU4OTUsImV4cCI6MTczMzcwMzA5NSwibmJmIjoxNzMzNjk1ODkwLCJzdWIiOiJ2cGFhcy1tYWdpYy1jb29raWUtNWVmYWM5N2M0NjM3NDRkZGFiYThlYTVhZTIyZDNkY2UiLCJjb250ZXh0Ijp7ImZlYXR1cmVzIjp7ImxpdmVzdHJlYW1pbmciOnRydWUsIm91dGJvdW5kLWNhbGwiOnRydWUsInNpcC1vdXRib3VuZC1jYWxsIjpmYWxzZSwidHJhbnNjcmlwdGlvbiI6dHJ1ZSwicmVjb3JkaW5nIjp0cnVlfSwidXNlciI6eyJoaWRkZW4tZnJvbS1yZWNvcmRlciI6ZmFsc2UsIm1vZGVyYXRvciI6dHJ1ZSwibmFtZSI6Im5hdGFzaGFyaXF1ZWxtZTA5OCIsImlkIjoiZ29vZ2xlLW9hdXRoMnwxMTIwMzk2MzEyMzE0NTQwMjEwNzciLCJhdmF0YXIiOiIiLCJlbWFpbCI6Im5hdGFzaGFyaXF1ZWxtZTA5OEBnbWFpbC5jb20ifX0sInJvb20iOiIqIn0.cvxcxZHUsd0QDHRUMRm9pz4II3MzbVP5E5lO32_E6rEYL1UjiRWp9dTFT1Nqb26gFvn_32XmmpfCvEO9HcXq48s9y5FpKp2hhuf_V3T1YoEL_3TBnlHiWTsSd_ZfcjXUGyo4hnpl2FDrNxksWJxQd9h-PeqAgXGtPScf9WH0ImVkV0knSBjv4e4YRQWvD840E-Cm7HF46BB6P570fpgHLdLr_c3wMYgniiaxtr7VsPQwdzbQFxTqEzs8hlCDgr--1JpxNq1FQmjVveATN1hwkVReJSDQYK9FlsJcwAlb4gNAJyv9oWn51y9Wjh7p01w1TesPoFJ1dKu7Gyzc1FIhQg"; // JWT generado desde tu backend
+        const roomName = "vpaas-magic-cookie-5efac97c463744ddaba8ea5ae22d3dce/Reunion{{ reunion.id }}";
+
+        // Verifica que el contenedor existe
+        const container = document.querySelector('#jitsi-container');
+        if (!container) {
+            console.error("El contenedor de Jitsi no existe.");
+            return;
+        }
+
         const options = {
-            roomName: "IntranetLSPcam{{ reunion.id }}",  // Genera un nombre único para cada reunión
-            width: '100%',
-            height: '100%',
-            parentNode: document.getElementById('jitsi-container'),
+            roomName: roomName,
+            parentNode: container,
+            jwt: jwt,
             configOverwrite: {
-                prejoinPageEnabled: false,
                 startWithAudioMuted: true,
                 startWithVideoMuted: true,
+                disableModeratorIndicator: false,
+                enableClosePage: false,
             },
             interfaceConfigOverwrite: {
                 TOOLBAR_BUTTONS: [
-                    'microphone', 'camera', 'desktop', 'chat', 'tileview', 'hangup'
+                    'microphone', 'camera', 'chat', 'desktop', 'hangup', 'tileview', 'fullscreen'
                 ],
                 SHOW_JITSI_WATERMARK: false,
+                HIDE_DEEP_LINKING_LOGO: true,
             },
         };
+
+        // Inicializa la API Jitsi
         const api = new JitsiMeetExternalAPI(domain, options);
 
-        // Enviar mensaje de chat
-        const formChat = document.getElementById('formChat');
-        formChat.addEventListener('submit', function (e) {
+        // Redirigir cuando la llamada se cierra
+        api.addEventListener('readyToClose', () => {
+            window.location.href = "/reuniones/";
+        });
+
+        // Manejo del chat
+        const chatContainer = document.getElementById('mensajes');
+        const chatForm = document.getElementById('formChat');
+
+        api.addEventListener('incomingMessage', (message) => {
+            const newMessage = document.createElement('div');
+            newMessage.className = "mensaje mb-2";
+            newMessage.innerHTML = `
+                <span class="font-semibold">${message.nick}:</span> ${message.message}
+            `;
+            chatContainer.appendChild(newMessage);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        });
+
+        chatForm.addEventListener('submit', function (e) {
             e.preventDefault();
-            const mensaje = document.getElementById('mensajeInput').value.trim();
-            if (mensaje) {
-                // Aquí puedes agregar la lógica para enviar el mensaje por WebSocket o cualquier servicio de chat en tiempo real que desees usar.
-                document.getElementById('mensajes').innerHTML += `
-                    <div class="mensaje mb-2">
-                        <span class="font-semibold">Tú:</span> ${mensaje}
-                    </div>`;
-                document.getElementById('mensajeInput').value = '';
-                document.getElementById('mensajes').scrollTop = document.getElementById('mensajes').scrollHeight;
+            const messageInput = document.getElementById('mensajeInput');
+            const message = messageInput.value.trim();
+            if (message) {
+                api.executeCommand('sendEndpointTextMessage', '', message);
+                const newMessage = document.createElement('div');
+                newMessage.className = "mensaje mb-2";
+                newMessage.innerHTML = `
+                    <span class="font-semibold">Tú:</span> ${message}
+                `;
+                chatContainer.appendChild(newMessage);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                messageInput.value = '';
             }
-        });
-
-        // Controles inferiores (Micrófono, Video, Compartir Pantalla, Colgar)
-        document.getElementById('finalizarLlamada').addEventListener('click', function () {
-            api.dispose(); // Finalizar la llamada
-        });
-
-        document.getElementById('toggleMicrofono').addEventListener('click', function () {
-            api.executeCommand('toggleAudio');
-        });
-
-        document.getElementById('toggleVideo').addEventListener('click', function () {
-            api.executeCommand('toggleVideo');
-        });
-
-        // Añadir botón para compartir pantalla
-        document.getElementById('toggleScreenShare').addEventListener('click', function () {
-            api.executeCommand('toggleShareScreen');
         });
     });
 </script>

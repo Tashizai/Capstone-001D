@@ -1,81 +1,140 @@
 {% extends 'base.html' %}
-
 {% load static %}
 
 {% block title %}Perfil de Usuario{% endblock %}
 
 {% block content %}
-<div class="contenedor-principal min-h-screen p-8" style="padding-top: 2rem;">
-    <div class="container mx-auto bg-white bg-opacity-80 p-6 rounded-lg shadow-lg flex" style="gap: 2rem;">
-
-        <!-- Sección de Información General -->
-        <div class="seccion-informacion-general" style="width: 30%; text-align: center; border-right: 2px solid #e2e8f0;">
-            <div class="mb-6 flex justify-center">
-                <img src="{% static 'app/img/default_profile.png' %}" alt="Foto de perfil" class="rounded-full shadow-md" style="width: 150px; height: 150px; object-fit: cover;">
+<div class="min-h-screen bg-animated-gradient flex justify-center items-center">
+    <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-4xl">
+        <!-- Sección del encabezado con la foto y datos principales -->
+        <div class="flex flex-col md:flex-row items-center gap-8 border-b pb-6">
+            <div class="flex-shrink-0">
+                <img src="{% static 'app/img/default_profile.png' %}" alt="Foto de perfil"
+                    class="rounded-full shadow-lg object-cover"
+                    style="width: 100px; height: 100px;">
             </div>
-            <h2 class="text-2xl font-semibold mb-2">{{ usuario.nombre }} {{ usuario.apellido }}</h2>
-            <p class="text-gray-500 mb-4">{{ usuario.email }}</p>
+            <div class="text-center md:text-left">
+                <h1 class="text-2xl font-semibold text-gray-700">{{ usuario.nombre }} {{ usuario.apellido }}</h1>
+                <p class="text-gray-500 mt-2">{{ usuario.email }}</p>
+                <p class="text-blue-500 font-medium mt-1">{{ usuario.rol }}</p>
+            </div>
         </div>
 
-        <!-- Sección de Edición del Perfil -->
-        <div class="seccion-edicion-perfil" style="width: 70%; padding-left: 2rem;">
-            <h2 class="text-2xl font-semibold text-blue-600 mb-6">Perfil</h2>
-            <form method="POST" action="">
-                {% csrf_token %}
+        <!-- Formulario de edición -->
+        <form method="POST" id="perfilForm" class="mt-6 space-y-6">
+            {% csrf_token %}
 
-                <!-- Mensajes -->
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="mb-4 p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Nombre -->
-                    <div>
-                        <label for="nombre" class="block text-lg font-semibold mb-1">Nombre:</label>
-                        <input type="text" id="nombre" name="nombre" value="{{ usuario.nombre }}" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                    </div>
-                    <!-- Apellido -->
-                    <div>
-                        <label for="apellido" class="block text-lg font-semibold mb-1">Apellido:</label>
-                        <input type="text" id="apellido" name="apellido" value="{{ usuario.apellido }}" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                    </div>
-                    <!-- RUT -->
-                    <div>
-                        <label for="run" class="block text-lg font-semibold mb-1">RUT:</label>
-                        <input type="text" id="run" name="run" value="{{ usuario.run }}" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" readonly />
-                    </div>
-                    <!-- Correo Electrónico -->
-                    <div>
-                        <label for="email" class="block text-lg font-semibold mb-1">Correo Electrónico:</label>
-                        <input type="email" id="email" name="email" value="{{ usuario.email }}" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                    </div>
-                    <!-- Contraseña -->
-                    <div>
-                        <label for="password" class="block text-lg font-semibold mb-1">Contraseña:</label>
-                        <input type="password" id="password" name="password" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Nueva contraseña (opcional)" />
-                    </div>
-                    <!-- Rol -->
-                    <div>
-                        <label for="rol" class="block text-lg font-semibold mb-1">Rol:</label>
-                        <select id="rol" name="rol" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
-                            <option value="Directivo" {% if usuario.rol == 'Directivo' %}selected{% endif %}>Directivo</option>
-                            <option value="Profesor" {% if usuario.rol == 'Profesor' %}selected{% endif %}>Profesor</option>
-                            <option value="Asistente" {% if usuario.rol == 'Asistente' %}selected{% endif %}>Asistente</option>
-                        </select>
-                    </div>
+            <!-- Mensajes de feedback -->
+            {% if messages %}
+            <div>
+                {% for message in messages %}
+                <div
+                    class="p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                    {{ message }}
                 </div>
+                {% endfor %}
+            </div>
+            {% endif %}
 
-                <!-- Botones de Acción -->
-                <div class="flex justify-end mt-8">
-                    <button type="submit" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">Guardar</button>
-                    <button type="reset" class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 ml-4">Limpiar</button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Nombre -->
+                <div>
+                    <label for="nombre" class="block text-lg font-semibold text-gray-600">Nombre</label>
+                    <input type="text" id="nombre" name="nombre" value="{{ usuario.nombre }}"
+                        class="w-full mt-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
                 </div>
-            </form>
-        </div>
+                <!-- Apellido -->
+                <div>
+                    <label for="apellido" class="block text-lg font-semibold text-gray-600">Apellido</label>
+                    <input type="text" id="apellido" name="apellido" value="{{ usuario.apellido }}"
+                        class="w-full mt-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <!-- RUT -->
+                <div>
+                    <label for="run" class="block text-lg font-semibold text-gray-600">RUT</label>
+                    <input type="text" id="run" name="run" value="{{ usuario.run }}"
+                        class="w-full mt-1 p-3 border rounded-lg bg-gray-100 text-gray-500" readonly />
+                </div>
+                <!-- Correo Electrónico -->
+                <div>
+                    <label for="email" class="block text-lg font-semibold text-gray-600">Correo Electrónico</label>
+                    <input type="email" id="email" name="email" value="{{ usuario.email }}"
+                        class="w-full mt-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <!-- Contraseña -->
+                <div>
+                    <label for="password" class="block text-lg font-semibold text-gray-600">Nueva Contraseña</label>
+                    <input type="password" id="password" name="password" placeholder="Dejar en blanco si no se cambia"
+                        class="w-full mt-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <!-- Rol -->
+                <div>
+                    <label for="rol" class="block text-lg font-semibold text-gray-600">Rol</label>
+                    <select id="rol" name="rol"
+                        class="w-full mt-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="Directivo" {% if usuario.rol == 'Directivo' %}selected{% endif %}>Directivo</option>
+                        <option value="Profesor" {% if usuario.rol == 'Profesor' %}selected{% endif %}>Profesor</option>
+                        <option value="Asistente" {% if usuario.rol == 'Asistente' %}selected{% endif %}>Asistente</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex justify-end gap-4">
+                <button type="button" id="btnLimpiar"
+                    class="bg-red-500 hover:bg-red-600 text-white font-medium px-6 py-2 rounded-lg shadow-md">
+                    Limpiar
+                </button>
+                <button type="submit"
+                    class="bg-green-500 hover:bg-green-600 text-white font-medium px-6 py-2 rounded-lg shadow-md">
+                    Guardar
+                </button>
+            </div>
+        </form>
     </div>
 </div>
+
+<style>
+    .bg-animated-gradient {
+        background: linear-gradient(45deg, #1e3a8a, #38bdf8, #9333ea);
+        background-size: 400% 400%;
+        animation: gradientAnimation 10s ease infinite;
+    }
+
+    @keyframes gradientAnimation {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const btnLimpiar = document.getElementById('btnLimpiar');
+        const form = document.getElementById('perfilForm');
+
+        if (btnLimpiar) {
+            btnLimpiar.addEventListener('click', function () {
+                // Restablece los valores de los campos a sus valores iniciales
+                form.querySelectorAll('input, select').forEach((input) => {
+                    if (input.id !== 'run') {
+                        if (input.type === 'text' || input.type === 'email' || input.type === 'password') {
+                            input.value = '';
+                        } else if (input.tagName === 'SELECT') {
+                            input.selectedIndex = 0; // Seleccionar el primer valor
+                        }
+                    }
+                });
+            });
+        }
+    });
+</script>
 {% endblock %}

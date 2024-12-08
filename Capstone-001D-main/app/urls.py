@@ -26,6 +26,7 @@ urlpatterns = [
     path('archivos/subir/<int:carpeta_id>/', views.subir_archivo_a_carpeta, name='subir_archivo_a_carpeta'),
     path('archivos/carpeta/<int:carpeta_id>/', views.ver_carpeta, name='ver_carpeta'),
     path('archivos/subir/', views.subir_archivo, name='subir_archivo'),
+    path('carpetas/eliminar/<int:carpeta_id>/', views.eliminar_carpeta, name='eliminar_carpeta'),
     path('archivos/eliminar/<int:archivo_id>/', views.eliminar_archivo, name='eliminar_archivo'),
     path('compartir/<str:tipo>/<int:recurso_id>/', views.compartir_recurso, name='compartir_recurso'),
     path('crear_subcarpeta/<int:carpeta_id>/', views.crear_subcarpeta, name='crear_subcarpeta'),

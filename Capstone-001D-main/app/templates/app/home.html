@@ -46,7 +46,7 @@
             <div id="lista-usuarios" class="overflow-y-auto h-80 bg-blue-50 rounded-lg p-6 shadow-md space-y-4">
                 {% for usuario in usuarios %}
                 {% if usuario.id_usuario %}
-                <a href="{% url 'ver_horario' usuario.id_usuario %}"
+                <a href="{% url 'ver_perfil_usuario' usuario.id_usuario %}"
                     class="flex items-center p-4 bg-blue-50 shadow-md rounded-lg transition transform hover:-translate-y-1 hover:shadow-lg hover:bg-blue-100">
                     <div
                         class="flex-shrink-0 h-12 w-12 bg-cyan-500 rounded-full flex items-center justify-center text-white font-bold">
