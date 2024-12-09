@@ -30,10 +30,10 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
-            # Redirigir a la vista común para todos los usuarios
             return redirect('home')
         else:
-            return HttpResponse("Credenciales incorrectas. Inténtalo de nuevo.")
+            # Agregar mensaje de error
+            messages.error(request, "Credenciales incorrectas. Por favor, verifica tu RUT y contraseña.")
 
     return render(request, 'app/login.html')
 

@@ -48,10 +48,9 @@
                     class="hover:text-cyan-300 transition block py-2 md:py-0">Reuniones</a></li>
 
             {% if user.is_staff %}
-            <!-- Menú de funciones para administradores -->
-            <li class="relative md:mr-4 group">
+            <li class="relative md:mr-4">
                 <button id="funciones-toggle"
-                    class="hover:text-cyan-300 transition block py-2 md:py-0 flex items-center focus:outline-none group-hover:text-cyan-300">
+                    class="hover:text-cyan-300 transition block py-2 md:py-0 flex items-center focus:outline-none">
                     Funciones
                     <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg">
@@ -60,16 +59,16 @@
                 </button>
                 <!-- Submenú de funciones -->
                 <ul id="funciones-menu"
-                    class="hidden md:group-hover:block group-focus:block w-40 bg-gradient-to-r from-blue-600 to-blue-800 text-gray-100 rounded-lg shadow-lg py-2 absolute top-full left-0 mt-2 z-50 space-y-1">
+                    class="hidden w-40 bg-gradient-to-r from-blue-600 to-blue-800 text-gray-100 rounded-lg shadow-lg py-2 absolute top-full left-0 mt-2 z-50 space-y-1">
                     <li>
                         <a href="{% url 'crear_usuario' %}"
-                            class="flex items-center justify-between px-4 py-2 hover:bg-blue-500 rounded transition group relative">
+                            class="flex items-center justify-between px-4 py-2 hover:bg-blue-500 rounded transition">
                             Añadir Usuario
                         </a>
                     </li>
                     <li>
                         <a href="{% url 'listado_usuarios' %}"
-                            class="flex items-center justify-between px-4 py-2 hover:bg-blue-500 rounded transition group relative">
+                            class="flex items-center justify-between px-4 py-2 hover:bg-blue-500 rounded transition">
                             Lista de Usuarios
                         </a>
                     </li>
@@ -120,41 +119,24 @@
         });
     </script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const themeToggle = document.getElementById('themeToggle');
-            const iconSun = document.getElementById('iconSun');
-            const iconMoon = document.getElementById('iconMoon');
-            const rootElement = document.documentElement; // <html>
-    
-            // Cambiar el tema
-            function toggleTheme() {
-                const currentTheme = rootElement.getAttribute('data-theme') || 'light';
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
-                rootElement.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                updateIcons(newTheme);
-            }
-    
-            // Actualizar los iconos del botón
-            function updateIcons(theme) {
-                if (theme === 'dark') {
-                    iconSun.classList.remove('hidden');
-                    iconMoon.classList.add('hidden');
-                } else {
-                    iconSun.classList.add('hidden');
-                    iconMoon.classList.remove('hidden');
+        document.addEventListener('DOMContentLoaded', () => {
+            const funcionesToggle = document.getElementById('funciones-toggle');
+            const funcionesMenu = document.getElementById('funciones-menu');
+
+            // Abrir y cerrar el submenú al hacer clic en "Funciones"
+            funcionesToggle.addEventListener('click', (e) => {
+                e.stopPropagation(); // Evitar que el evento se propague al body
+                funcionesMenu.classList.toggle('hidden');
+            });
+
+            // Cerrar el submenú al hacer clic fuera
+            document.addEventListener('click', () => {
+                if (!funcionesMenu.classList.contains('hidden')) {
+                    funcionesMenu.classList.add('hidden');
                 }
-            }
-    
-            // Manejar clic en el botón
-            themeToggle.addEventListener('click', toggleTheme);
-    
-            // Configuración inicial del tema
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            rootElement.setAttribute('data-theme', savedTheme);
-            updateIcons(savedTheme);
+            });
         });
     </script>
 </body>
+
 </html>

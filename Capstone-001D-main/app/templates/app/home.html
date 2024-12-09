@@ -28,7 +28,8 @@
 
     {% if user.is_staff %}
     <!-- Lista de Usuarios con Búsqueda (Solo para Administradores) -->
-    <div class="w-full bg-gradient-to-r from-blue-100 via-blue-300 to-blue-100 shadow-xl rounded-lg p-8 mt-10 z-10 max-w-4xl mx-auto">
+    <div
+        class="w-full bg-gradient-to-r from-blue-100 via-blue-300 to-blue-100 shadow-xl rounded-lg p-8 mt-10 z-10 max-w-4xl mx-auto">
         <h2 class="text-3xl font-bold mb-6 text-gray-800 text-center">Lista de Usuarios</h2>
         <div class="space-y-6">
             <!-- Campo de Búsqueda con ícono -->
@@ -54,7 +55,8 @@
                     </div>
                     <div class="ml-4">
                         <h3 class="text-lg font-semibold text-gray-800">{{ usuario.nombre }} {{ usuario.apellido }}</h3>
-                        <p class="text-sm {% if usuario.rol == 'Administrador' %}text-cyan-600{% elif usuario.rol == 'Profesor' %}text-blue-600{% else %}text-purple-600{% endif %}">
+                        <p
+                            class="text-sm {% if usuario.rol == 'Administrador' %}text-cyan-600{% elif usuario.rol == 'Profesor' %}text-blue-600{% else %}text-purple-600{% endif %}">
                             {{ usuario.rol }}
                         </p>
                     </div>
@@ -66,7 +68,7 @@
             </div>
         </div>
     </div>
-{% endif %}
+    {% endif %}
 
     <!-- Burbujas -->
     <div class="bubbles-container absolute inset-0 overflow-hidden -z-10">
@@ -140,4 +142,43 @@
         }
     }
 </style>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('buscar-usuario'); // Campo de búsqueda
+        const userList = document.getElementById('lista-usuarios'); // Contenedor de la lista de usuarios
+        const userItems = userList.querySelectorAll('a'); // Todos los enlaces de usuarios
+
+        searchInput.addEventListener('input', function () {
+            const searchTerm = searchInput.value.toLowerCase().trim(); // Obtiene el texto ingresado
+
+            userItems.forEach(item => {
+                const userName = item.querySelector('h3').textContent.toLowerCase(); // Nombre completo
+                const userRole = item.querySelector('p').textContent.toLowerCase(); // Rol del usuario
+
+                // Filtrar por nombre o rol
+                if (userName.includes(searchTerm) || userRole.includes(searchTerm)) {
+                    item.style.display = ''; // Mostrar elemento
+                } else {
+                    item.style.display = 'none'; // Ocultar elemento
+                }
+            });
+
+            // Mostrar mensaje si no hay coincidencias
+            const visibleItems = Array.from(userItems).filter(item => item.style.display !== 'none');
+            if (visibleItems.length === 0) {
+                if (!userList.querySelector('.no-results')) {
+                    const noResultsMessage = document.createElement('p');
+                    noResultsMessage.textContent = 'No se encontraron usuarios.';
+                    noResultsMessage.className = 'text-center text-gray-600 no-results';
+                    userList.appendChild(noResultsMessage);
+                }
+            } else {
+                const noResultsMessage = userList.querySelector('.no-results');
+                if (noResultsMessage) {
+                    noResultsMessage.remove();
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}

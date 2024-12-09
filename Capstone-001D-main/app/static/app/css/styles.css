@@ -2,3 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+#funciones-menu {
+    transition: all 0.3s ease-in-out;
+}
+
+.no-results {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #6b7280; /* Gris */
+    margin-top: 10px;
+}
