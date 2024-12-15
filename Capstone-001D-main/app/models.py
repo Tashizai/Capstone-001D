@@ -151,3 +151,13 @@ class Reunion(models.Model):
 
     def __str__(self):
         return f"{self.titulo} - {self.fecha.strftime('%d/%m/%Y %H:%M')}"
+    
+class Notificacion(models.Model):
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notificaciones')
+    titulo = models.CharField(max_length=255)
+    mensaje = models.TextField()
+    leido = models.BooleanField(default=False)  # Indica si la notificación ha sido leída
+    fecha_creacion = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return f"Notificación para {self.usuario} - {self.titulo}"

@@ -143,3 +143,11 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # Por ejemplo, 5 MB
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Cambia según tu proveedor
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'natashariquelme098@gmail.com'
+EMAIL_HOST_PASSWORD = 'dnkl vbar fnqi grod'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
