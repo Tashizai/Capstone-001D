@@ -8,10 +8,9 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const domain = "8x8.vc";
-        const jwt = "eyJraWQiOiJ2cGFhcy1tYWdpYy1jb29raWUtNWVmYWM5N2M0NjM3NDRkZGFiYThlYTVhZTIyZDNkY2UvMTc5NTY1LVNBTVBMRV9BUFAiLCJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiJqaXRzaSIsImlzcyI6ImNoYXQiLCJpYXQiOjE3MzM2OTU4OTUsImV4cCI6MTczMzcwMzA5NSwibmJmIjoxNzMzNjk1ODkwLCJzdWIiOiJ2cGFhcy1tYWdpYy1jb29raWUtNWVmYWM5N2M0NjM3NDRkZGFiYThlYTVhZTIyZDNkY2UiLCJjb250ZXh0Ijp7ImZlYXR1cmVzIjp7ImxpdmVzdHJlYW1pbmciOnRydWUsIm91dGJvdW5kLWNhbGwiOnRydWUsInNpcC1vdXRib3VuZC1jYWxsIjpmYWxzZSwidHJhbnNjcmlwdGlvbiI6dHJ1ZSwicmVjb3JkaW5nIjp0cnVlfSwidXNlciI6eyJoaWRkZW4tZnJvbS1yZWNvcmRlciI6ZmFsc2UsIm1vZGVyYXRvciI6dHJ1ZSwibmFtZSI6Im5hdGFzaGFyaXF1ZWxtZTA5OCIsImlkIjoiZ29vZ2xlLW9hdXRoMnwxMTIwMzk2MzEyMzE0NTQwMjEwNzciLCJhdmF0YXIiOiIiLCJlbWFpbCI6Im5hdGFzaGFyaXF1ZWxtZTA5OEBnbWFpbC5jb20ifX0sInJvb20iOiIqIn0.cvxcxZHUsd0QDHRUMRm9pz4II3MzbVP5E5lO32_E6rEYL1UjiRWp9dTFT1Nqb26gFvn_32XmmpfCvEO9HcXq48s9y5FpKp2hhuf_V3T1YoEL_3TBnlHiWTsSd_ZfcjXUGyo4hnpl2FDrNxksWJxQd9h-PeqAgXGtPScf9WH0ImVkV0knSBjv4e4YRQWvD840E-Cm7HF46BB6P570fpgHLdLr_c3wMYgniiaxtr7VsPQwdzbQFxTqEzs8hlCDgr--1JpxNq1FQmjVveATN1hwkVReJSDQYK9FlsJcwAlb4gNAJyv9oWn51y9Wjh7p01w1TesPoFJ1dKu7Gyzc1FIhQg"; // JWT generado desde tu backend
+        const jwt = "{{ jwt|escapejs }}"; // JWT generado desde el backend
         const roomName = "vpaas-magic-cookie-5efac97c463744ddaba8ea5ae22d3dce/Reunion{{ reunion.id }}";
 
-        // Verifica que el contenedor existe
         const container = document.querySelector('#jitsi-container');
         if (!container) {
             console.error("El contenedor de Jitsi no existe.");
@@ -37,43 +36,10 @@
             },
         };
 
-        // Inicializa la API Jitsi
         const api = new JitsiMeetExternalAPI(domain, options);
 
-        // Redirigir cuando la llamada se cierra
         api.addEventListener('readyToClose', () => {
             window.location.href = "/reuniones/";
-        });
-
-        // Manejo del chat
-        const chatContainer = document.getElementById('mensajes');
-        const chatForm = document.getElementById('formChat');
-
-        api.addEventListener('incomingMessage', (message) => {
-            const newMessage = document.createElement('div');
-            newMessage.className = "mensaje mb-2";
-            newMessage.innerHTML = `
-                <span class="font-semibold">${message.nick}:</span> ${message.message}
-            `;
-            chatContainer.appendChild(newMessage);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        });
-
-        chatForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const messageInput = document.getElementById('mensajeInput');
-            const message = messageInput.value.trim();
-            if (message) {
-                api.executeCommand('sendEndpointTextMessage', '', message);
-                const newMessage = document.createElement('div');
-                newMessage.className = "mensaje mb-2";
-                newMessage.innerHTML = `
-                    <span class="font-semibold">Tú:</span> ${message}
-                `;
-                chatContainer.appendChild(newMessage);
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-                messageInput.value = '';
-            }
         });
     });
 </script>

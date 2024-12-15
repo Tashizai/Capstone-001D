@@ -19,75 +19,78 @@
     <!-- Navbar con Funciones Exclusivas para Administradores -->
     <nav
         class="bg-gradient-to-r from-blue-800 to-cyan-600 text-white py-4 px-8 shadow-md flex justify-between items-center">
-        <!-- Logo y Título del Liceo, redirige al Home -->
+        <!-- Logo y Título del Liceo -->
         <a href="{% url 'home' %}" class="flex items-center space-x-3 hover:text-cyan-400 transition">
             <img src="{% static 'app/img/logo.png' %}" alt="Logo Liceo" class="w-10 h-10 rounded-full">
             <span class="text-2xl font-semibold">Liceo San Pedro</span>
         </a>
 
-        <!-- Botón de menú para pantallas pequeñas -->
-        <button id="navbar-toggle" class="md:hidden focus:outline-none focus:ring-2 focus:ring-white">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-            </svg>
-        </button>
-
         <!-- Menú de navegación -->
-        <ul id="navbar-menu"
-            class="hidden md:flex md:space-x-6 items-center w-full md:w-auto md:mt-0 mt-4 flex-col md:flex-row md:bg-transparent md:flex p-4 md:p-0 rounded-lg">
-            <li class="md:mr-4"><a href="{% url 'calendario' %}"
-                    class="hover:text-cyan-300 transition block py-2 md:py-0">Calendario</a></li>
-            <li class="md:mr-4"><a href="{% url 'ver_horario' usuario_id=request.user.id_usuario %}"
-                    class="hover:text-cyan-300 transition block py-2 md:py-0">Horario</a></li>
-            <li class="md:mr-4"><a href="{% url 'lista_anuncios' %}"
-                    class="hover:text-cyan-300 transition block py-2 md:py-0">Anuncios</a></li>
-            <li class="md:mr-4"><a href="{% url 'vista_archivos' %}"
-                    class="hover:text-cyan-300 transition block py-2 md:py-0">Archivos</a></li>
-            <li class="md:mr-4"><a href="{% url 'ver_reuniones' %}"
-                    class="hover:text-cyan-300 transition block py-2 md:py-0">Reuniones</a></li>
+        <ul id="navbar-menu" class="md:flex md:space-x-6 items-center hidden">
+            <!-- Centro de notificaciones -->
+            <li class="relative">
+                <button id="notificaciones-btn" class="relative focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14V11a6 6 0 10-12 0v3c0 .386-.146.74-.405 1.01L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    <span id="contador-notificaciones"
+                        class="absolute top-0 right-0 bg-red-500 text-white rounded-full px-1 text-xs hidden">0</span>
+                </button>
+                <div id="notificaciones-panel" class="hidden fixed top-16 right-4 shadow-lg rounded-lg w-72">
+                    <div class="bg-gradient-to-r from-blue-700 to-blue-900 px-4 py-2 flex justify-between items-center text-white rounded-t-lg">
+                        <h3 class="font-bold">Notificaciones</h3>
+                        <button id="cerrar-notificaciones" class="text-white hover:text-gray-200 focus:outline-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="notificaciones-contenido" class="max-h-72 overflow-y-auto bg-gradient-to-b from-white to-gray-100 divide-y divide-gray-300">
+                        <!-- Aquí se cargarán las notificaciones -->
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-700 to-blue-900 px-4 py-2 text-center rounded-b-lg">
+                        <button id="marcar-todas-leidas" class="text-sm text-white hover:underline">
+                            Marcar todas como leídas
+                        </button>
+                    </div>
+                </div>
+            </li>
+
+            <!-- Enlaces principales -->
+            <li><a href="{% url 'calendario' %}" class="hover:text-cyan-300 transition block py-2">Calendario</a></li>
+            <li><a href="{% url 'ver_horario' usuario_id=request.user.id_usuario %}"
+                    class="hover:text-cyan-300 transition block py-2">Horario</a></li>
+            <li><a href="{% url 'lista_anuncios' %}" class="hover:text-cyan-300 transition block py-2">Anuncios</a></li>
+            <li><a href="{% url 'vista_archivos' %}" class="hover:text-cyan-300 transition block py-2">Archivos</a></li>
+            <li><a href="{% url 'ver_reuniones' %}" class="hover:text-cyan-300 transition block py-2">Reuniones</a></li>
 
             {% if user.is_staff %}
-            <!-- Menú de funciones para administradores -->
-            <li class="relative md:mr-4 group">
-                <button id="funciones-toggle"
-                    class="hover:text-cyan-300 transition block py-2 md:py-0 flex items-center focus:outline-none group-hover:text-cyan-300">
+            <li class="relative">
+                <button id="funciones-toggle" class="hover:text-cyan-300 transition flex items-center">
                     Funciones
                     <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </button>
-                <!-- Submenú de funciones -->
                 <ul id="funciones-menu"
-                    class="hidden md:group-hover:block group-focus:block w-40 bg-gradient-to-r from-blue-600 to-blue-800 text-gray-100 rounded-lg shadow-lg py-2 absolute top-full left-0 mt-2 z-50 space-y-1">
-                    <li>
-                        <a href="{% url 'crear_usuario' %}"
-                            class="flex items-center justify-between px-4 py-2 hover:bg-blue-500 rounded transition group relative">
-                            Añadir Usuario
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'listado_usuarios' %}"
-                            class="flex items-center justify-between px-4 py-2 hover:bg-blue-500 rounded transition group relative">
-                            Lista de Usuarios
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'ver_reuniones' %}"
-                            class="flex items-center justify-between px-4 py-2 hover:bg-blue-500 rounded transition">
-                            Crear Sala de Videollamada
-                        </a>
+                    class="hidden w-40 bg-gradient-to-r from-blue-600 to-blue-800 text-gray-100 rounded-lg shadow-lg py-2 absolute top-full mt-2 z-50 space-y-1">
+                    <li><a href="{% url 'crear_usuario' %}" class="px-4 py-2 hover:bg-blue-500 rounded">Añadir
+                            Usuario</a></li>
+                    <li><a href="{% url 'listado_usuarios' %}" class="px-4 py-2 hover:bg-blue-500 rounded">Lista de
+                            Usuarios</a></li>
+                    <li><a href="{% url 'ver_reuniones' %}" class="px-4 py-2 hover:bg-blue-500 rounded">Crear Sala</a>
                     </li>
                 </ul>
             </li>
             {% endif %}
 
-            <li class="md:mr-4"><a href="{% url 'logout' %}"
-                    class="hover:text-cyan-300 transition block py-2 md:py-0">Cerrar Sesión</a></li>
+            <li><a href="{% url 'logout' %}" class="hover:text-cyan-300 transition block py-2">Cerrar Sesión</a></li>
         </ul>
     </nav>
-
     <!-- Contenido principal -->
     <main class="flex-1 h-full w-full py-0 px-0">
         {% block content %}{% endblock %}
@@ -99,62 +102,68 @@
     </footer>
 
     {% block extra_js %}{% endblock %}
-
-    <!-- Script para el menú responsive -->
     <script>
-        const navbarToggle = document.getElementById('navbar-toggle');
-        const navbarMenu = document.getElementById('navbar-menu');
-        const funcionesToggle = document.getElementById('funciones-toggle');
-        const funcionesMenu = document.getElementById('funciones-menu');
+        document.addEventListener("DOMContentLoaded", () => {
+            const notificacionesBtn = document.getElementById("notificaciones-btn");
+            const notificacionesPanel = document.getElementById("notificaciones-panel");
+            const notificacionesContenido = document.getElementById("notificaciones-contenido");
+            const marcarTodasLeidas = document.getElementById("marcar-todas-leidas");
+            const cerrarNotificaciones = document.getElementById("cerrar-notificaciones");
 
-        // Abrir y cerrar menú de navegación para dispositivos móviles
-        navbarToggle.addEventListener('click', () => {
-            navbarMenu.classList.toggle('hidden');
-        });
+            // Abrir y cerrar el panel de notificaciones
+            notificacionesBtn.addEventListener("click", async () => {
+                notificacionesPanel.classList.toggle("hidden");
+                if (!notificacionesPanel.classList.contains("hidden")) {
+                    await cargarNotificaciones();
+                }
+            });
 
-        // Abrir y cerrar el submenú de "Funciones" en dispositivos móviles
-        funcionesToggle.addEventListener('click', () => {
-            if (window.innerWidth < 768) {
-                funcionesMenu.classList.toggle('hidden');
-            }
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const themeToggle = document.getElementById('themeToggle');
-            const iconSun = document.getElementById('iconSun');
-            const iconMoon = document.getElementById('iconMoon');
-            const rootElement = document.documentElement; // <html>
-    
-            // Cambiar el tema
-            function toggleTheme() {
-                const currentTheme = rootElement.getAttribute('data-theme') || 'light';
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
-                rootElement.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                updateIcons(newTheme);
-            }
-    
-            // Actualizar los iconos del botón
-            function updateIcons(theme) {
-                if (theme === 'dark') {
-                    iconSun.classList.remove('hidden');
-                    iconMoon.classList.add('hidden');
-                } else {
-                    iconSun.classList.add('hidden');
-                    iconMoon.classList.remove('hidden');
+            // Cerrar el panel
+            cerrarNotificaciones.addEventListener("click", () => {
+                notificacionesPanel.classList.add("hidden");
+            });
+
+            // Cargar las notificaciones desde el servidor
+            async function cargarNotificaciones() {
+                try {
+                    const response = await fetch("/api/notificaciones/");
+                    const data = await response.json();
+
+                    notificacionesContenido.innerHTML = "";
+                    if (data.notificaciones.length > 0) {
+                        data.notificaciones.forEach((notificacion) => {
+                            const item = document.createElement("div");
+                            item.className = "notificacion-item";
+                            item.innerHTML = `
+                        <p class="font-medium text-blue-900">${notificacion.titulo}</p>
+                        <p class="text-sm text-gray-800">${notificacion.mensaje}</p>
+                        <span class="fecha">${new Date(notificacion.fecha_creacion).toLocaleString()}</span>
+                    `;
+                            notificacionesContenido.appendChild(item);
+                        });
+                    } else {
+                        notificacionesContenido.innerHTML =
+                            '<p class="text-center text-white py-4">No tienes notificaciones.</p>';
+                    }
+                } catch (error) {
+                    console.error("Error al cargar las notificaciones:", error);
                 }
             }
-    
-            // Manejar clic en el botón
-            themeToggle.addEventListener('click', toggleTheme);
-    
-            // Configuración inicial del tema
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            rootElement.setAttribute('data-theme', savedTheme);
-            updateIcons(savedTheme);
+
+            // Marcar todas como leídas
+            if (marcarTodasLeidas) {
+                marcarTodasLeidas.addEventListener("click", async () => {
+                    try {
+                        await fetch("/api/notificaciones/marcar-todas-leidas/", { method: "POST" });
+                        await cargarNotificaciones();
+                    } catch (error) {
+                        console.error("Error al marcar todas como leídas:", error);
+                    }
+                });
+            }
         });
     </script>
+
 </body>
+
 </html>
